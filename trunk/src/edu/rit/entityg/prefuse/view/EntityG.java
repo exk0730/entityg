@@ -57,7 +57,7 @@ public class EntityG extends Display {
     /**
      * Data group name for node-labels
      */
-    private static final String LABEL = "label";
+    private static final String LABEL = "data";
     /**
      * Name of the action for "drawing"
      */
@@ -99,6 +99,10 @@ public class EntityG extends Display {
      */
     private Graph initializeGraph() {
         Graph g = new Graph();
+        //Add a new column to the graph. This tells the Graph that our nodes will display data as Strings, and
+        //tells the graph the data group name of each label - in this case, "data". Technically, this is an
+        //arbitrary label.
+        g.addColumn( LABEL, String.class );
         return g;
     }
     
