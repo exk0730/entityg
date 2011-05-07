@@ -119,6 +119,20 @@ public class EntityG extends Display {
     }
 
     /**
+     * Checks if a {@link GenericTreeNode} is already represented as a {@link Node} on the graph.
+     * @param node The {@link GenericTreeNode} we want to test for existence.
+     * @return True if <code>node</code> already exists on the graph, else false.
+     */
+    private boolean existsInGraph( GenericTreeNode<String> node ) {
+        for( Node n : getNodes() ) {
+            if( n.getString( LABEL ).equalsIgnoreCase( node.getData() ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns a list of nodes that are currently displayed (visible or not) on this graph as a list of
      * {@link Node}s.
      */
@@ -282,6 +296,7 @@ public class EntityG extends Display {
      */
     // <editor-fold defaultstate="collapsed" desc="Custom node control private class">
     private class NodeControl extends ControlAdapter {
+
         @Override
         public void itemClicked( VisualItem item, MouseEvent e ) {
             if( !SwingUtilities.isLeftMouseButton( e ) ) return;
@@ -295,15 +310,21 @@ public class EntityG extends Display {
                  * nodes to be invisible. Else, if the tree node has children and they are invisible, we want
                  * to set those nodes to be visible.
                  */
-                if( treeNode.hasChildren() && hasVisibleChildren( item ) ) {
-                    setVisibilityOfAllChildren( item, false );
-
-                } else if( treeNode.hasChildren() && !hasVisibleChildren( item ) ) {
-                    setVisibilityOfAllChildren( item, true );
-
+                if( treeNode.hasChildren() ) {
+                    if( hasVisibleChildren( item ) ) {
+                        setVisibilityOfAllChildren( item, false );
+                    } else {
+                        setVisibilityOfAllChildren( item, true );
+                    }
                 } else {
+                    //If they click on "ContactName"
+                    if( treeNode.getDataHeader().equalsIgnoreCase( loader.getBaseColumnName() ) ) {
+                        treeNode = loader.x( treeNode, treeNode.getData(), treeNode.getDataHeader() );
+                    } else {    //Else they clicked on "Mr"/"Rochester"/etc
+                        treeNode = loader.y( treeNode, treeNode.getData(),
+                                             treeNode.getDataHeader(), DEFAULT_MAX_NODES );
+                    }
                     //Retrieve all children of this TreeNode and render it on the graph.
-                    treeNode = loader.x( treeNode, treeNode.getData(), treeNode.getDataHeader(), DEFAULT_MAX_NODES );
                     if( treeNode.hasChildren() ) {
                         renderNewNodes( source, treeNode );
                     }
@@ -345,12 +366,15 @@ public class EntityG extends Display {
          */
         private void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
             for( GenericTreeNode<String> child : treeParent.getChildren() ) {
+                if( existsInGraph( child ) ) {
+                    continue;
+                }
                 Node newNode = graph.addNode();
-                newNode.setString( EntityG.LABEL, child.getData() );
+                newNode.setString( LABEL, child.getData() );
                 displayNodeToDataNodeMap.put( newNode, child );
                 graph.addEdge( newNode, nodeParent );
             }
-            m_vis.run( EntityG.DRAW );
+            m_vis.run( DRAW );
         }
     }// </editor-fold>
 }

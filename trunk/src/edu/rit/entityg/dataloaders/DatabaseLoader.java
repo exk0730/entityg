@@ -153,7 +153,6 @@ public class DatabaseLoader {
             }
             GenericTreeNode<String> rootParent = new GenericTreeNode<String>( parentNodeLabel, parentHeader );
             //Add the children data to the root parent
-            //Skip the first element (since it has already been loaded into a GenericTreeNode)
             for( int i = 0; i < results.size(); i++ ) {
                 rootParent.addChild( new GenericTreeNode<String>( results.get( i ), childrenHeaders.get( i ) ) );
             }
@@ -164,6 +163,83 @@ public class DatabaseLoader {
         }
         //TODO: an empty node, instead of null might be better here.
         return null;
+    }
+
+    public GenericTreeNode<String> createAbsoluteParent( String label, String dataColumn ) {
+        return new GenericTreeNode<String>( label, dataColumn );
+    }
+
+    /**
+     * Loads all children nodes of a 'describing node.'
+     * ---------If the user clicks a contact name, get all information about that contact.
+     * @param parent
+     * @param label
+     * @param dataColumn
+     * @return
+     */
+    public GenericTreeNode<String> x( GenericTreeNode<String> parent,
+                                      String label,
+                                      String dataColumn ) {
+        if( baseQuery == null ) {
+            //TODO: do something - bad bad bad bad
+        }
+        List<String> childrenHeaders = patterns.get( dataColumn );
+        try {
+            ResultSet rs = conn.executeQuery( baseQuery + dataColumn + " = '" + label + "'" );
+            ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, childrenHeaders );
+            if( results.isEmpty() ) {
+                //TODO: means that the query was invalid / didn't return any information
+            } else if( childrenHeaders.size() > results.size() ) {
+                //TODO: means that the query returned null values which are not included in the results -
+                //we don't want "null" as a label for ANY node, even if the user wants that data in the graph
+            }
+            //Add the children data to the root parent
+            for( int i = 0; i < results.size(); i++ ) {
+                parent.addChild( new GenericTreeNode<String>( results.get( i ), childrenHeaders.get( i ) ) );
+            }
+            return parent;
+        } catch( SQLException sqle ) {
+            //TODO: something meaningful
+            sqle.printStackTrace();
+        }
+        //TODO: an empty node, instead of null might be better here.
+        return null;
+    }
+
+    /**
+     * Loads all children nodes of an 'information node.'
+     * ---------If the user clicks "Mr", get all contact names with "Mr"
+     * @param parent
+     * @param label
+     * @param dataColumn
+     * @param maxNodes
+     * @return
+     */
+    public GenericTreeNode<String> y( GenericTreeNode<String> parent,
+                                      String label,
+                                      String dataColumn,
+                                      int maxNodes ) {
+        if( baseQuery == null ) {
+            //TODO: BAD
+        }
+        try {
+            ResultSet rs = conn.executeQuery( baseQuery + dataColumn + " = '" + label + "'" );
+            ArrayList<ArrayList<String>> data = conn.getData( rs, baseColumnName );
+            if( data.isEmpty() ) {
+                return parent;
+            }
+            for( int i = 0; i < data.size(); i++ ) {
+                if( i >= maxNodes )
+                    break;
+                //Get the only piece of information in our current row.
+                String result = data.get( i ).get( 0 );
+                parent.addChild( new GenericTreeNode<String>( result, baseColumnName ) );
+            }
+        } catch( SQLException sqle ) {
+            //TODO: something meaningful
+            sqle.printStackTrace();
+        }
+        return parent;
     }
 
     /**
