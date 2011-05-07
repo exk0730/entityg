@@ -4,8 +4,11 @@ import edu.rit.entityg.database.DatabaseConnection;
 import edu.rit.entityg.dataloaders.DatabaseLoader;
 import edu.rit.entityg.treeimpl.GenericTree;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.JFrame;
 import prefuse.Display;
 import prefuse.Visualization;
@@ -19,6 +22,8 @@ import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
 import prefuse.data.Graph;
 import prefuse.data.Node;
+import prefuse.data.Tuple;
+import prefuse.data.tuple.TupleSet;
 import prefuse.render.DefaultRendererFactory;
 import prefuse.render.LabelRenderer;
 import prefuse.util.ColorLib;
@@ -95,12 +100,6 @@ public class EntityG extends Display {
         initializeGraph();
         m_vis.addGraph( GRAPH, graph );
 
-        for( int i = 0; i < graph.getNodeCount(); i++ ) {
-            Node n = graph.getNode( i );
-            System.out.println( "Node " + i + ": " + n );
-            System.out.println( "Corresponds to TreeNode: " + displayNodeToDataNodeMap.get( n ) );
-        }
-
         setupLabelRenderer();
         setupColorActions();
         setupMainAnimationLayout();
@@ -108,6 +107,32 @@ public class EntityG extends Display {
 
         //Set things running.
         m_vis.run( DRAW );
+    }
+
+    /**
+     * Returns a list of nodes that are currently displayed (visible or not) on this graph.
+     */
+    public List<Node> getNodes() {
+        Node[] nodes = new Node[graph.getNodeCount()];
+        for( int i = 0; i < graph.getNodeCount(); i++ ) {
+            nodes[i] = graph.getNode( i );
+        }
+        return Arrays.asList( nodes );
+    }
+
+    /**
+     * Returns a list of nodes that are currently displayed (visible or not) on this graph as a list of
+     * {@link VisualItem}s.
+     */
+    public List<VisualItem> getNodesAsVisualItems() {
+        TupleSet nodes = m_vis.getGroup( NODES );
+        VisualItem[] items = new VisualItem[nodes.getTupleCount()];
+        int tupleCounter = 0;
+        for( Iterator tupleIter = nodes.tuples(); tupleIter.hasNext(); ) {
+            items[tupleCounter] = m_vis.getVisualItem( NODES, (Tuple) tupleIter.next() );
+            tupleCounter++;
+        }
+        return Arrays.asList( items );
     }
 
     /**
