@@ -1,5 +1,6 @@
 package edu.rit.entityg.prefuse.view;
 
+import edu.rit.entityg.dataloaders.DatabaseLoader;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ public class NodeControl extends ControlAdapter {
     private HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
     private Graph g;
     private Visualization v;
+    private DatabaseLoader loader;
 
     /**
      * Default constructor.
@@ -32,11 +34,11 @@ public class NodeControl extends ControlAdapter {
      *          {@link EntityG#DRAW} action again, if we add any new {@link Node}s to the graph.
      */
     public NodeControl( HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap,
-                        Graph g,
-                        Visualization v ) {
+                        Graph g, Visualization v, DatabaseLoader loader ) {
         this.displayNodeToDataNodeMap = displayNodeToDataNodeMap;
         this.g = g;
         this.v = v;
+        this.loader = loader;
 
     }
 
@@ -45,11 +47,18 @@ public class NodeControl extends ControlAdapter {
         if( !SwingUtilities.isLeftMouseButton( e ) ) return;
         if( e.getClickCount() == 2 ) {//DoubleClick
             //The backing Tuple of this visual item is actually a Node object (from g.addNode)
-            Node backingNode = (Node) item.getSourceTuple();
+            Node source = (Node) item.getSourceTuple();
             //Get the related TreeNode of this Node
-            GenericTreeNode<String> treeNode = displayNodeToDataNodeMap.get( backingNode );
-            if( treeNode.hasChildren() ) {
-                removeAllChildren( item );
+            GenericTreeNode<String> treeNode = displayNodeToDataNodeMap.get( source );
+            /**
+             * If the Tree node has children, and they are visible nodes on the graph, we want to set those
+             * nodes to be invisible. Else, if the tree node has children and they are invisible, we want
+             * to set those nodes to be visible.
+             */
+            if( treeNode.hasChildren() && hasVisibleChildren( item ) ) {
+                setVisibilityOfAllChildren( item, false );
+            } else if( treeNode.hasChildren() && !hasVisibleChildren( item ) ) {
+                setVisibilityOfAllChildren( item, true );
             } else {
 //                treeNode = loader.tryNewLoad( treeNode );
 //                if( treeNode.hasChildren() ) {
@@ -62,16 +71,30 @@ public class NodeControl extends ControlAdapter {
     /**
      * Recursively removes all children from the Graph from the Node that was clicked on.
      * @param item The Node that was clicked on (as a VisualItem).
+     * @param visibility Flag to say if we want to hide all children, or display them. If <code>hide</code> is true,
+     *                   the method will set all children nodes and edges of <code>item</code> to invisible. If
+     *                   <code>hide</code> is false, the method will set all children nodes and edges to visible.
      */
-    private void removeAllChildren( VisualItem item ) {
+    private void setVisibilityOfAllChildren( VisualItem item, boolean visibility ) {
         NodeItem ni = (NodeItem) item;
         for( int i = 0; i < ni.getChildCount(); i++ ) {
             NodeItem child = (NodeItem) ni.getChild( i );
             EdgeItem ei = (EdgeItem) child.getParentEdge();
-            child.setVisible( !child.isVisible() );
-            ei.setVisible( !ei.isVisible() );
-            removeAllChildren( child );
+            child.setVisible( visibility );
+            ei.setVisible( visibility );
+            setVisibilityOfAllChildren( child, visibility );
         }
+    }
+
+    /**
+     * Tests the first child of this {@link VisualItem} for its visibility. We only need to check the first child,
+     * because the visibility status for each child after should be the same as the first child.
+     * @param item The {@link VisualItem} we are testing for children visibility.
+     * @return True if the children of <code>item</code> are visible, else false.
+     */
+    private boolean hasVisibleChildren( VisualItem item ) {
+        NodeItem ni = (NodeItem) item;
+        return ((NodeItem) ni.getChild( 0 )).isVisible();
     }
 
     /**

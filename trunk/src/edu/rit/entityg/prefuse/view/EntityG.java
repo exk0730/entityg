@@ -4,7 +4,6 @@ import edu.rit.entityg.database.DatabaseConnection;
 import edu.rit.entityg.dataloaders.DatabaseLoader;
 import edu.rit.entityg.treeimpl.GenericTree;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -81,15 +80,20 @@ public class EntityG extends Display {
     /**
      * A mapping of a {@link prefuse.data.Node} object to the {@link GenericTreeNode} that contains its 'real' data.
      */
-    HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
+    private HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
     /**
      * Tree that contains a root node, and all of its children.
      */
-    GenericTree<String> tree = new GenericTree<String>();
+    private GenericTree<String> tree = new GenericTree<String>();
     /**
      * Default max number of nodes to display per each node-group.
      */
     private static final int DEFAULT_MAX_NODES = 10;
+    /**
+     * The data loader for EntityG. In the future, there can be different data loaders (such as, from XML or
+     * a CSV file).
+     */
+    private DatabaseLoader loader = new DatabaseLoader( DatabaseConnection.instance() );
 
     /**
      * Default constructor. Starts everything.
@@ -110,7 +114,8 @@ public class EntityG extends Display {
     }
 
     /**
-     * Returns a list of nodes that are currently displayed (visible or not) on this graph.
+     * Returns a list of nodes that are currently displayed (visible or not) on this graph as a list of
+     * {@link Node}s.
      */
     public List<Node> getNodes() {
         Node[] nodes = new Node[graph.getNodeCount()];
@@ -147,6 +152,7 @@ public class EntityG extends Display {
         graph.addColumn( LABEL, String.class );
 
         GenericTreeNode<String> absoluteParent = setupAbsoluteParent();
+        tree.setRoot( absoluteParent );
         //Add the parent node and its children to the graph
         Node root = graph.addNode();
         root.setString( LABEL, absoluteParent.getData() );
@@ -167,9 +173,8 @@ public class EntityG extends Display {
      */
     // <editor-fold defaultstate="collapsed" desc="Setup absolute parent">
     private GenericTreeNode<String> setupAbsoluteParent() {
-        //TODO: move this somewhere else
+        //TODO: move this somewhere else - maybe have it be an argument to the program
         String query = "SELECT * FROM customers WHERE ContactName = 'Kevin Battle'";
-        DatabaseLoader loader = new DatabaseLoader( DatabaseConnection.instance() );
         //Load data from VARDB
         String[] children = { "Title", "CompanyName", "Addr1", "City", "State", "Zip" };
         //Set a pattern
@@ -261,6 +266,6 @@ public class EntityG extends Display {
         addControlListener( new ZoomControl() );
         addControlListener( new PanControl() );
         addControlListener( new DragControl() );
-        addControlListener( new NodeControl( displayNodeToDataNodeMap, graph, m_vis ) );
+        addControlListener( new NodeControl( displayNodeToDataNodeMap, graph, m_vis, loader ) );
     }// </editor-fold>
 }
