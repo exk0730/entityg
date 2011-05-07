@@ -46,6 +46,21 @@ public class DatabaseLoader {
      * like: <code>["FirstName" -> {"City", "State", "Age"}]</code>
      */
     private HashMap<String, List<String>> patterns;
+    /**
+     * The <code>baseQuery</code> for the database loader is the query which will provide all information needed
+     * to load data into the prefuse nodes. This query will usually look something like:
+     * <br/><code>SELECT * FROM <i>tableName</i> WHERE</code>
+     * <br/>with the ending to the where-clause being specified by what node is clicked on (or initial load
+     * specifications). It can be a complicated SQL query, or a simple one, but the query should contain the table
+     * name, and possibly the specific columns you want to be looking at (although, these columns can be specified
+     * by other means). If the baseQuery is null at the time of this class performing any functions, the program
+     * will fail to execute and exit gracefully.
+     */
+    private String baseQuery = null;
+    /**
+     * The column name of the absolute root's data.
+     */
+    private String baseColumnName = null;
     private DatabaseConnection conn;
 
     /**
@@ -55,6 +70,34 @@ public class DatabaseLoader {
     public DatabaseLoader( DatabaseConnection conn ) {
         this.conn = conn;
         this.patterns = new HashMap<String, List<String>>();
+    }
+
+    /**
+     * Set the base query for loading data into prefuse nodes.
+     */
+    public void setBaseQuery( String baseQuery ) {
+        this.baseQuery = baseQuery;
+    }
+
+    /**
+     * Get the <code>baseQuery</code> of this database loader.
+     */
+    public String getBaseQuery() {
+        return baseQuery;
+    }
+
+    /**
+     * Set the base column name of the absolute root's data.
+     */
+    public void setBaseColumnName( String baseColumnName ) {
+        this.baseColumnName = baseColumnName;
+    }
+
+    /**
+     * Get the <code>baseColumnName</code> of this database loader.
+     */
+    public String getBaseColumnName() {
+        return baseColumnName;
     }
 
     /**
@@ -94,10 +137,13 @@ public class DatabaseLoader {
      * descriptor of the entire graph, while its children give information about the parent node.
      * @param query
      */
-    public GenericTreeNode<String> loadAbsoluteParent( String query, String parentNodeLabel, String parentHeader ) {
+    public GenericTreeNode<String> loadAbsoluteParent( String parentNodeLabel, String parentHeader ) {
+        if( baseQuery == null ) {
+            //TODO: do something - bad bad bad bad
+        }
         List<String> childrenHeaders = patterns.get( parentHeader );
         try {
-            ResultSet rs = conn.executeQuery( query );
+            ResultSet rs = conn.executeQuery( baseQuery + parentHeader + " = '" + parentNodeLabel + "'" );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, childrenHeaders );
             if( results.isEmpty() ) {
                 //TODO: means that the query was invalid / didn't return any information
@@ -125,8 +171,35 @@ public class DatabaseLoader {
      * @param parent 
      * @return
      */
-    public GenericTreeNode<String> x( GenericTreeNode<String> parent ) {
-        
-        return null;
+    public GenericTreeNode<String> x( GenericTreeNode<String> parent,
+                                      String parentNodeLabel,
+                                      String parentHeader,
+                                      int maximumNodes ) {
+        if( baseQuery == null ) {
+            //TODO: BAD
+        }
+        try {
+            //If the user wants information about a "ContactName" node
+            if( parentHeader.equals( baseColumnName ) ) {
+                parent = loadAbsoluteParent( parentNodeLabel, parentHeader );
+                return parent;
+            }
+            ResultSet rs = conn.executeQuery( baseQuery + parentHeader + " = '" + parentNodeLabel + "'" );
+            ArrayList<ArrayList<String>> data = conn.getData( rs, baseColumnName );
+            if( data.isEmpty() ) {
+                return parent;
+            }
+            for( int i = 0; i < data.size(); i++ ) {
+                if( i >= maximumNodes )
+                    break;
+                //Get the only piece of information in our current row.
+                String result = data.get( i ).get( 0 );
+                parent.addChild( new GenericTreeNode<String>( result, baseColumnName ) );
+            }
+        } catch( SQLException sqle ) {
+            //TODO: something meaningful
+            sqle.printStackTrace();
+        }
+        return parent;
     }
 }
