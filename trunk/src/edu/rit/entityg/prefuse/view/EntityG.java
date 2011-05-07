@@ -1,6 +1,10 @@
 package edu.rit.entityg.prefuse.view;
 
+import edu.rit.entityg.database.DatabaseConnection;
+import edu.rit.entityg.dataloaders.DatabaseLoader;
+import edu.rit.entityg.treeimpl.GenericTree;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
+import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JFrame;
 import prefuse.Display;
@@ -33,7 +37,7 @@ import prefuse.visual.VisualItem;
 public class EntityG extends Display {
 
     // <editor-fold defaultstate="collapsed" desc="Main">
-    public static void main( String [] args ) {
+    public static void main( String[] args ) {
         EntityG entityg = new EntityG();
         JFrame frame = new JFrame( "EntityG - A Visualization for Data" );
         frame.getContentPane().add( entityg );
@@ -41,7 +45,6 @@ public class EntityG extends Display {
         frame.setVisible( true );
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     }//</editor-fold>
-
     /**
      * Data group name for the graph
      */
@@ -74,6 +77,14 @@ public class EntityG extends Display {
      * A mapping of a {@link prefuse.data.Node} object to the {@link GenericTreeNode} that contains its 'real' data.
      */
     HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
+    /**
+     * Tree that contains a root node, and all of its children.
+     */
+    GenericTree<String> tree = new GenericTree<String>();
+    /**
+     * Default max number of nodes to display per each node-group.
+     */
+    private static final int DEFAULT_MAX_NODES = 10;
 
     /**
      * Default constructor. Starts everything.
@@ -81,8 +92,14 @@ public class EntityG extends Display {
     public EntityG() {
         super( new Visualization() );
         displayNodeToDataNodeMap = new HashMap<Node, GenericTreeNode<String>>();
-        graph = initializeGraph();
+        initializeGraph();
         m_vis.addGraph( GRAPH, graph );
+
+        for( int i = 0; i < graph.getNodeCount(); i++ ) {
+            Node n = graph.getNode( i );
+            System.out.println( "Node " + i + ": " + n );
+            System.out.println( "Corresponds to TreeNode: " + displayNodeToDataNodeMap.get( n ) );
+        }
 
         setupLabelRenderer();
         setupColorActions();
@@ -97,15 +114,45 @@ public class EntityG extends Display {
      * Initialize Nodes and Edges for this graph.
      * @return A Graph object that contains the initial nodes and edges that will be displayed.
      */
-    private Graph initializeGraph() {
-        Graph g = new Graph();
+    private void initializeGraph() {
+        graph = new Graph();
         //Add a new column to the graph. This tells the Graph that our nodes will display data as Strings, and
         //tells the graph the data group name of each label - in this case, "data". Technically, this is an
         //arbitrary label.
-        g.addColumn( LABEL, String.class );
-        return g;
+        graph.addColumn( LABEL, String.class );
+
+        GenericTreeNode<String> absoluteParent = setupAbsoluteParent();
+        //Add the parent node and its children to the graph
+        Node root = graph.addNode();
+        root.setString( LABEL, absoluteParent.getData() );
+        displayNodeToDataNodeMap.put( root, absoluteParent );
+        for( GenericTreeNode<String> aChild : absoluteParent.getChildren() ) {
+            Node nodeChild = graph.addNode();
+            nodeChild.setString( LABEL, aChild.getData() );
+            displayNodeToDataNodeMap.put( nodeChild, aChild );
+            graph.addEdge( root, nodeChild );
+        }
     }
-    
+
+    /**
+     * Sets up the first node group for this graph. This is where all customization for how the graph should first
+     * appear should go.
+     * @return A {@link GenericTreeNode} that contains a root node for this graph, and its immediate children.
+     *         This parent node will be rendered on the graph.
+     */
+    // <editor-fold defaultstate="collapsed" desc="Setup absolute parent">
+    private GenericTreeNode<String> setupAbsoluteParent() {
+        //TODO: move this somewhere else
+        String query = "SELECT * FROM customers WHERE ContactName = 'Kevin Battle'";
+        DatabaseLoader loader = new DatabaseLoader( DatabaseConnection.instance() );
+        //Load data from VARDB
+        String[] children = { "Title", "CompanyName", "Addr1", "City", "State", "Zip" };
+        //Set a pattern
+        loader.addPattern( "ContactName", Arrays.asList( children ) );
+        //Get the first node group as an instance of a parent node
+        return loader.loadAbsoluteParent( query, "Kevin Battle", "ContactName" );
+    }//</editor-fold>
+
     /**
      * Set the Label Renderer of nodes for this visualization.
      */
@@ -115,7 +162,6 @@ public class EntityG extends Display {
         drf.setDefaultRenderer( new LabelRenderer( LABEL ) );
         m_vis.setRendererFactory( drf );
     }// </editor-fold>
-
 
     /**
      * Set the color actions for painting nodes and edges for this visualization.
@@ -144,7 +190,6 @@ public class EntityG extends Display {
         //Add the 'draw' action to the visualization
         m_vis.putAction( DRAW, draw );
     }// </editor-fold>
-
 
     /**
      * Sets the graph to use a ForceDirectedLayout as its main Animate layout.
@@ -179,7 +224,6 @@ public class EntityG extends Display {
         //the DRAW action to run.
         m_vis.runAfter( DRAW, ANIMATE );
     }// </editor-fold>
-
 
     /**
      * Setup the window that this graph is displayed in.
