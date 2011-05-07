@@ -25,6 +25,7 @@ public class NodeControl extends ControlAdapter {
     private Graph g;
     private Visualization v;
     private DatabaseLoader loader;
+    private int maximumNodes;
 
     /**
      * Default constructor.
@@ -34,12 +35,12 @@ public class NodeControl extends ControlAdapter {
      *          {@link EntityG#DRAW} action again, if we add any new {@link Node}s to the graph.
      */
     public NodeControl( HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap,
-                        Graph g, Visualization v, DatabaseLoader loader ) {
+                        Graph g, Visualization v, DatabaseLoader loader, int maximumNodes ) {
         this.displayNodeToDataNodeMap = displayNodeToDataNodeMap;
         this.g = g;
         this.v = v;
         this.loader = loader;
-
+        this.maximumNodes = maximumNodes;
     }
 
     @Override
@@ -57,13 +58,16 @@ public class NodeControl extends ControlAdapter {
              */
             if( treeNode.hasChildren() && hasVisibleChildren( item ) ) {
                 setVisibilityOfAllChildren( item, false );
+
             } else if( treeNode.hasChildren() && !hasVisibleChildren( item ) ) {
                 setVisibilityOfAllChildren( item, true );
+
             } else {
-//                treeNode = loader.tryNewLoad( treeNode );
-//                if( treeNode.hasChildren() ) {
-//                    renderGraph( backingNode, treeNode );
-//                }
+                //Retrieve all children of this TreeNode and render it on the graph.
+                treeNode = loader.x( treeNode, treeNode.getData(), treeNode.getDataHeader(), maximumNodes );
+                if( treeNode.hasChildren() ) {
+                    renderNewNodes( source, treeNode );
+                }
             }
         }
     }
@@ -100,7 +104,13 @@ public class NodeControl extends ControlAdapter {
     /**
      * Renders the newly-added {@link Node}s and their {@link Edge}s.
      */
-    private void renderNewNodes() {
+    private void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
+        for( GenericTreeNode<String> child : treeParent.getChildren() ) {
+            Node newNode = g.addNode();
+            newNode.setString( EntityG.LABEL, child.getData() );
+            displayNodeToDataNodeMap.put( newNode, child );
+            g.addEdge( newNode, nodeParent );
+        }
         v.run( EntityG.DRAW );
     }
 }

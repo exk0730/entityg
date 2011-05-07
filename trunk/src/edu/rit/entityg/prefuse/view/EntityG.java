@@ -4,11 +4,13 @@ import edu.rit.entityg.database.DatabaseConnection;
 import edu.rit.entityg.dataloaders.DatabaseLoader;
 import edu.rit.entityg.treeimpl.GenericTree;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.ActionList;
@@ -16,6 +18,7 @@ import prefuse.action.RepaintAction;
 import prefuse.action.assignment.ColorAction;
 import prefuse.action.layout.graph.ForceDirectedLayout;
 import prefuse.activity.Activity;
+import prefuse.controls.ControlAdapter;
 import prefuse.controls.DragControl;
 import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
@@ -31,6 +34,8 @@ import prefuse.util.force.ForceSimulator;
 import prefuse.util.force.NBodyForce;
 import prefuse.util.force.RungeKuttaIntegrator;
 import prefuse.util.force.SpringForce;
+import prefuse.visual.EdgeItem;
+import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 
 /**
@@ -64,7 +69,7 @@ public class EntityG extends Display {
     /**
      * Data group name for node-labels
      */
-    private static final String LABEL = "data";
+    public static final String LABEL = "data";
     /**
      * Name of the action for "drawing"
      */
@@ -88,7 +93,7 @@ public class EntityG extends Display {
     /**
      * Default max number of nodes to display per each node-group.
      */
-    private static final int DEFAULT_MAX_NODES = 10;
+    private static final int DEFAULT_MAX_NODES = 5;
     /**
      * The data loader for EntityG. In the future, there can be different data loaders (such as, from XML or
      * a CSV file).
@@ -174,13 +179,14 @@ public class EntityG extends Display {
     // <editor-fold defaultstate="collapsed" desc="Setup absolute parent">
     private GenericTreeNode<String> setupAbsoluteParent() {
         //TODO: move this somewhere else - maybe have it be an argument to the program
-        String query = "SELECT * FROM customers WHERE ContactName = 'Kevin Battle'";
+        loader.setBaseQuery( "SELECT * FROM customers WHERE " );
+        loader.setBaseColumnName( "ContactName" );
         //Load data from VARDB
         String[] children = { "Title", "CompanyName", "Addr1", "City", "State", "Zip" };
         //Set a pattern
         loader.addPattern( "ContactName", Arrays.asList( children ) );
         //Get the first node group as an instance of a parent node
-        return loader.loadAbsoluteParent( query, "Kevin Battle", "ContactName" );
+        return loader.loadAbsoluteParent( "Kevin Battle", "ContactName" );
     }//</editor-fold>
 
     /**
@@ -224,7 +230,7 @@ public class EntityG extends Display {
     /**
      * Sets the graph to use a ForceDirectedLayout as its main Animate layout.
      */
-    // <editor-fold defaultstate="collapsed" desc="Set up animation layout">
+    // <editor-fold defaultstate="collapsed" desc="Setup animation layout">
     private void setupMainAnimationLayout() {
         //Set the algorithm the ForceSimulator should use
         ForceSimulator fsim = new ForceSimulator( new RungeKuttaIntegrator() );
@@ -266,6 +272,85 @@ public class EntityG extends Display {
         addControlListener( new ZoomControl() );
         addControlListener( new PanControl() );
         addControlListener( new DragControl() );
-        addControlListener( new NodeControl( displayNodeToDataNodeMap, graph, m_vis, loader ) );
+        addControlListener( new NodeControl() );
+    }// </editor-fold>
+
+    /**
+     * Customized ControlAdapter specifically used when the user clicks on a {@link Node}.
+     * {@link NodeControl} must be defined in this class because it needs access to the {@link Graph} object of
+     * EntityG, as well as the backing {@link Visualization}.
+     */
+    // <editor-fold defaultstate="collapsed" desc="Custom node control private class">
+    private class NodeControl extends ControlAdapter {
+        @Override
+        public void itemClicked( VisualItem item, MouseEvent e ) {
+            if( !SwingUtilities.isLeftMouseButton( e ) ) return;
+            if( e.getClickCount() == 2 ) {//DoubleClick
+                //The backing Tuple of this visual item is actually a Node object (from g.addNode)
+                Node source = (Node) item.getSourceTuple();
+                //Get the related TreeNode of this Node
+                GenericTreeNode<String> treeNode = displayNodeToDataNodeMap.get( source );
+                /**
+                 * If the Tree node has children, and they are visible nodes on the graph, we want to set those
+                 * nodes to be invisible. Else, if the tree node has children and they are invisible, we want
+                 * to set those nodes to be visible.
+                 */
+                if( treeNode.hasChildren() && hasVisibleChildren( item ) ) {
+                    setVisibilityOfAllChildren( item, false );
+
+                } else if( treeNode.hasChildren() && !hasVisibleChildren( item ) ) {
+                    setVisibilityOfAllChildren( item, true );
+
+                } else {
+                    //Retrieve all children of this TreeNode and render it on the graph.
+                    treeNode = loader.x( treeNode, treeNode.getData(), treeNode.getDataHeader(), DEFAULT_MAX_NODES );
+                    if( treeNode.hasChildren() ) {
+                        renderNewNodes( source, treeNode );
+                    }
+                }
+            }
+        }
+
+        /**
+         * Recursively removes all children from the Graph from the Node that was clicked on.
+         * @param item The Node that was clicked on (as a VisualItem).
+         * @param visibility Flag to say if we want to hide all children, or display them. If <code>hide</code> is true,
+         *                   the method will set all children nodes and edges of <code>item</code> to invisible. If
+         *                   <code>hide</code> is false, the method will set all children nodes and edges to visible.
+         */
+        private void setVisibilityOfAllChildren( VisualItem item, boolean visibility ) {
+            NodeItem ni = (NodeItem) item;
+            for( int i = 0; i < ni.getChildCount(); i++ ) {
+                NodeItem child = (NodeItem) ni.getChild( i );
+                EdgeItem ei = (EdgeItem) child.getParentEdge();
+                child.setVisible( visibility );
+                ei.setVisible( visibility );
+                setVisibilityOfAllChildren( child, visibility );
+            }
+        }
+
+        /**
+         * Tests the first child of this {@link VisualItem} for its visibility. We only need to check the first child,
+         * because the visibility status for each child after should be the same as the first child.
+         * @param item The {@link VisualItem} we are testing for children visibility.
+         * @return True if the children of <code>item</code> are visible, else false.
+         */
+        private boolean hasVisibleChildren( VisualItem item ) {
+            NodeItem ni = (NodeItem) item;
+            return ((NodeItem) ni.getChild( 0 )).isVisible();
+        }
+
+        /**
+         * Renders the newly-added {@link Node}s and their {@link Edge}s.
+         */
+        private void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
+            for( GenericTreeNode<String> child : treeParent.getChildren() ) {
+                Node newNode = graph.addNode();
+                newNode.setString( EntityG.LABEL, child.getData() );
+                displayNodeToDataNodeMap.put( newNode, child );
+                graph.addEdge( newNode, nodeParent );
+            }
+            m_vis.run( EntityG.DRAW );
+        }
     }// </editor-fold>
 }
