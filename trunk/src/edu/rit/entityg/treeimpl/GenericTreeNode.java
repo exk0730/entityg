@@ -39,6 +39,7 @@ public class GenericTreeNode<T> {
      */
     public GenericTreeNode( T displayData, T dataHeader ) {
         this();
+        setData( displayData );
         setDataHeader( dataHeader );
     }
 
