@@ -83,6 +83,13 @@ public class DatabaseLoader {
     }
 
     /**
+     * Get the patterns that are currently contained by this data loader.
+     */
+    public HashMap<String, List<String>> getPatterns() {
+        return this.patterns;
+    }
+
+    /**
      * The absolute parent should only return a parent node with its children. Therefore, the parent node is the main
      * descriptor of the entire graph, while its children give information about the parent node.
      * @param query
@@ -110,6 +117,16 @@ public class DatabaseLoader {
             sqle.printStackTrace();
         }
         //TODO: an empty node, instead of null might be better here.
+        return null;
+    }
+
+    /**
+     *
+     * @param parent 
+     * @return
+     */
+    public GenericTreeNode<String> x( GenericTreeNode<String> parent ) {
+        
         return null;
     }
 }

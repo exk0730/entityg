@@ -191,10 +191,14 @@ public class GenericTreeNode<T> {
      */
     @Override
     public String toString() {
-        String ret = "";
+        String ret = "GenericTreeNode [";
+        ret += "(DATA): ";
         ret += (getData() == null) ? "" : getData().toString();
+        ret += " (DATA HEADER): ";
+        ret += (getDataHeader() == null) ? "" : getDataHeader().toString();
         ret += " (HIDDEN): ";
         ret += (getHiddenData() == null) ? "" : getHiddenData().toString();
+        ret += "]";
         return ret;
     }
 
