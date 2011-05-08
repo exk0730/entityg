@@ -17,13 +17,13 @@ public class Logging {
     private static final Logger logger;
 
     static {
-        logger = Logger.getLogger( "VARApp.Logger" );
+        logger = Logger.getLogger( "EntityG.Logger" );
         try {
-            final File logFile = new File( "varapp.log" );
+            final File logFile = new File( "entityg.log" );
             if( !logFile.exists() ) {
                 logFile.createNewFile();
             }
-            FileHandler fh = new FileHandler( "varapp.log", true ); //set filehandler with append true
+            FileHandler fh = new FileHandler( "entityg.log", true ); //set filehandler with append true
             fh.setFormatter( new Formatter() {
 
                 @Override
