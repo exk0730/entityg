@@ -134,16 +134,17 @@ public class DatabaseLoader {
 
     /**
      * The absolute parent should only return a parent node with its children. Therefore, the parent node is the main
-     * descriptor of the entire graph, while its children give information about the parent node.
-     * @param query
+     * starting point of the entire graph, while its children give information about the parent node.
+     * @param data
+     * @param columnHeader
      */
-    public GenericTreeNode<String> loadAbsoluteParent( String parentNodeLabel, String parentHeader ) {
+    public GenericTreeNode<String> loadAbsoluteParent( String data, String columnHeader ) {
         if( baseQuery == null ) {
             //TODO: do something - bad bad bad bad
         }
-        List<String> childrenHeaders = patterns.get( parentHeader );
+        List<String> childrenHeaders = patterns.get( columnHeader );
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + parentHeader + " = '" + parentNodeLabel + "'" );
+            ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, childrenHeaders );
             if( results.isEmpty() ) {
                 //TODO: means that the query was invalid / didn't return any information
@@ -151,7 +152,7 @@ public class DatabaseLoader {
                 //TODO: means that the query returned null values which are not included in the results -
                 //we don't want "null" as a label for ANY node, even if the user wants that data in the graph
             }
-            GenericTreeNode<String> rootParent = new GenericTreeNode<String>( parentNodeLabel, parentHeader );
+            GenericTreeNode<String> rootParent = new GenericTreeNode<String>( data, columnHeader );
             //Add the children data to the root parent
             for( int i = 0; i < results.size(); i++ ) {
                 rootParent.addChild( new GenericTreeNode<String>( results.get( i ), childrenHeaders.get( i ) ) );
@@ -170,22 +171,22 @@ public class DatabaseLoader {
     }
 
     /**
-     * Loads all children nodes of a 'describing node.'
-     * ---------If the user clicks a contact name, get all information about that contact.
-     * @param parent
-     * @param label
-     * @param dataColumn
-     * @return
+     * Loads information nodes. Information nodes are nodes which describe a center node. Basically, they provide
+     * information about a single node. They can be considered the children of a single node.
+     * @param parent The {@link GenericTreeNode} parent that we should load information for.
+     * @param data The display data of <code>parent</code>.
+     * @param columnHeader The data header of <code>parent</code>
+     * @return <code>parent</code> with its information nodes as children.
      */
-    public GenericTreeNode<String> x( GenericTreeNode<String> parent,
-                                      String label,
-                                      String dataColumn ) {
+    public GenericTreeNode<String> loadInformationNodes( GenericTreeNode<String> parent,
+                                                         String data,
+                                                         String columnHeader ) {
         if( baseQuery == null ) {
             //TODO: do something - bad bad bad bad
         }
-        List<String> childrenHeaders = patterns.get( dataColumn );
+        List<String> childrenHeaders = patterns.get( columnHeader );
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + dataColumn + " = '" + label + "'" );
+            ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, childrenHeaders );
             if( results.isEmpty() ) {
                 //TODO: means that the query was invalid / didn't return any information
@@ -207,69 +208,32 @@ public class DatabaseLoader {
     }
 
     /**
-     * Loads all children nodes of an 'information node.'
-     * ---------If the user clicks "Mr", get all contact names with "Mr"
-     * @param parent
-     * @param label
-     * @param dataColumn
-     * @param maxNodes
-     * @return
+     * Loads all center nodes. If an information node is clicked, then we should display all "center nodes" which
+     * have the information data in common.
+     * @param parent The {@link GenericTreeNode} that is an information node.
+     * @param data The display data of <code>parent</code>.
+     * @param columnHeader The data header of <code>parent</code>
+     * @param maxNodes The maximum number of center nodes we should load as children of <code>parent</code>
+     * @return <code>parent</code> with center nodes that commonly share <code>parent's</code> data as its children.
      */
-    public GenericTreeNode<String> y( GenericTreeNode<String> parent,
-                                      String label,
-                                      String dataColumn,
-                                      int maxNodes ) {
+    public GenericTreeNode<String> loadCenterNodes( GenericTreeNode<String> parent,
+                                                    String data,
+                                                    String columnHeader,
+                                                    int maxNodes ) {
         if( baseQuery == null ) {
             //TODO: BAD
         }
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + dataColumn + " = '" + label + "'" );
-            ArrayList<ArrayList<String>> data = conn.getData( rs, baseColumnName );
-            if( data.isEmpty() ) {
+            ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
+            ArrayList<ArrayList<String>> results = conn.getData( rs, baseColumnName );
+            if( results.isEmpty() ) {
                 return parent;
             }
-            for( int i = 0; i < data.size(); i++ ) {
+            for( int i = 0; i < results.size(); i++ ) {
                 if( i >= maxNodes )
                     break;
                 //Get the only piece of information in our current row.
-                String result = data.get( i ).get( 0 );
-                parent.addChild( new GenericTreeNode<String>( result, baseColumnName ) );
-            }
-        } catch( SQLException sqle ) {
-            //TODO: something meaningful
-            sqle.printStackTrace();
-        }
-        return parent;
-    }
-
-    /**
-     *
-     * @param parent 
-     * @return
-     */
-    public GenericTreeNode<String> x( GenericTreeNode<String> parent,
-                                      String parentNodeLabel,
-                                      String parentHeader,
-                                      int maximumNodes ) {
-        if( baseQuery == null ) {
-            //TODO: BAD
-        }
-        try {
-            //If the user wants information about a "ContactName" node
-            if( parentHeader.equals( baseColumnName ) ) {
-                parent = loadAbsoluteParent( parentNodeLabel, parentHeader );
-                return parent;
-            }
-            ResultSet rs = conn.executeQuery( baseQuery + parentHeader + " = '" + parentNodeLabel + "'" );
-            ArrayList<ArrayList<String>> data = conn.getData( rs, baseColumnName );
-            if( data.isEmpty() ) {
-                return parent;
-            }
-            for( int i = 0; i < data.size(); i++ ) {
-                if( i >= maximumNodes )
-                    break;
-                //Get the only piece of information in our current row.
-                String result = data.get( i ).get( 0 );
+                String result = results.get( i ).get( 0 );
                 parent.addChild( new GenericTreeNode<String>( result, baseColumnName ) );
             }
         } catch( SQLException sqle ) {
