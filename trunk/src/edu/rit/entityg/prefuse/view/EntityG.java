@@ -22,6 +22,7 @@ import prefuse.controls.ControlAdapter;
 import prefuse.controls.DragControl;
 import prefuse.controls.PanControl;
 import prefuse.controls.ZoomControl;
+import prefuse.data.Edge;
 import prefuse.data.Graph;
 import prefuse.data.Node;
 import prefuse.data.Tuple;
@@ -122,15 +123,16 @@ public class EntityG extends Display {
     /**
      * Checks if a {@link GenericTreeNode} is already represented as a {@link Node} on the graph.
      * @param node The {@link GenericTreeNode} we want to test for existence.
-     * @return True if <code>node</code> already exists on the graph, else false.
+     * @return The {@link Node} that exists in the {@link Graph} which represents <code>node</code>, or null
+     *         if a {@link Node} does not exist.
      */
-    private boolean existsInGraph( GenericTreeNode<String> node ) {
+    private Node getVisualNodeFromTreeNode( GenericTreeNode<String> node ) {
         for( Node n : getNodes() ) {
             if( n.getString( LABEL ).equalsIgnoreCase( node.getData() ) ) {
-                return true;
+                return n;
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -359,20 +361,27 @@ public class EntityG extends Display {
          */
         private boolean hasVisibleChildren( VisualItem item ) {
             NodeItem ni = (NodeItem) item;
+            if( !ni.children().hasNext() ) {
+                return false;
+            }
             return ((NodeItem) ni.getChild( 0 )).isVisible();
         }
 
         /**
          * Renders the newly-added {@link Node}s and their {@link Edge}s.
          * <p/><b>Note:</b>Currently, the graph will <i>not</i> render nodes which already exist in the graph. This
-         * means that there are no duplicates of a node on the graph.
+         * means that there are no duplicates of a node on the graph. Instead, there will be an {@link Edge} created
+         * between <code>nodeParent</code> and the pre-existing {@link Node}.
          * @param nodeParent The {@link Node} that was clicked on.
          * @param treeParent The {@link GenericTreeNode} that contains the data of the children of
          *                   <code>nodeParent</code>.
          */
         private void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
             for( GenericTreeNode<String> child : treeParent.getChildren() ) {
-                if( existsInGraph( child ) ) {
+                Node n = getVisualNodeFromTreeNode( child );
+                if( n != null ) {
+                    //TODO: check for edge existence, otherwise we'll be adding a redundant edge to the graph.
+                    graph.addEdge( n, nodeParent );
                     continue;
                 }
                 Node newNode = graph.addNode();
