@@ -79,7 +79,7 @@ public class EntityG extends Display {
      */
     private static final String ANIMATE = "animate";
     /**
-     * The Graph object we are displaying.
+     * The {@link Graph} object we are displaying.
      */
     private Graph graph;
     /**
@@ -93,11 +93,12 @@ public class EntityG extends Display {
     /**
      * Default max number of nodes to display per each node-group.
      */
-    private static final int DEFAULT_MAX_NODES = 5;
+    private static final int DEFAULT_MAX_NODES = 7;
     /**
      * The data loader for EntityG. In the future, there can be different data loaders (such as, from XML or
      * a CSV file).
      */
+    //TODO: Should allow 'DatabaseConnection' customization
     private DatabaseLoader loader = new DatabaseLoader( DatabaseConnection.instance() );
 
     /**
@@ -317,12 +318,12 @@ public class EntityG extends Display {
                         setVisibilityOfAllChildren( item, true );
                     }
                 } else {
-                    //If they click on "ContactName"
+                    //If they click on a "center node"
                     if( treeNode.getDataHeader().equalsIgnoreCase( loader.getBaseColumnName() ) ) {
-                        treeNode = loader.x( treeNode, treeNode.getData(), treeNode.getDataHeader() );
-                    } else {    //Else they clicked on "Mr"/"Rochester"/etc
-                        treeNode = loader.y( treeNode, treeNode.getData(),
-                                             treeNode.getDataHeader(), DEFAULT_MAX_NODES );
+                        treeNode = loader.loadInformationNodes( treeNode, treeNode.getData(), treeNode.getDataHeader() );
+                    } else {    //Else they clicked on an information node
+                        treeNode = loader.loadCenterNodes( treeNode, treeNode.getData(),
+                                                           treeNode.getDataHeader(), DEFAULT_MAX_NODES );
                     }
                     //Retrieve all children of this TreeNode and render it on the graph.
                     if( treeNode.hasChildren() ) {
@@ -363,6 +364,11 @@ public class EntityG extends Display {
 
         /**
          * Renders the newly-added {@link Node}s and their {@link Edge}s.
+         * <p/><b>Note:</b>Currently, the graph will <i>not</i> render nodes which already exist in the graph. This
+         * means that there are no duplicates of a node on the graph.
+         * @param nodeParent The {@link Node} that was clicked on.
+         * @param treeParent The {@link GenericTreeNode} that contains the data of the children of
+         *                   <code>nodeParent</code>.
          */
         private void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
             for( GenericTreeNode<String> child : treeParent.getChildren() ) {
