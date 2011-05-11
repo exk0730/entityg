@@ -86,11 +86,11 @@ public class DatabaseConnection {
     private DatabaseConnection( Properties props ) {
         if( props.containsKey( "host" ) ) {
             host = props.getProperty( "host" );
-        } else if( props.containsKey( "database" ) ) {
+        } if( props.containsKey( "database" ) ) {
             database = props.getProperty( "database" );
-        } else if( props.containsKey( "uid" ) ) {
+        } if( props.containsKey( "uid" ) ) {
             uid = props.getProperty( "uid" );
-        } else if( props.containsKey( "password" ) ) {
+        } if( props.containsKey( "password" ) ) {
             password = props.getProperty( "password" );
         }
 
