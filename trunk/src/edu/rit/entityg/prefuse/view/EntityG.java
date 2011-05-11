@@ -2,8 +2,10 @@ package edu.rit.entityg.prefuse.view;
 
 import edu.rit.entityg.database.DatabaseConnection;
 import edu.rit.entityg.dataloaders.DatabaseLoader;
+import edu.rit.entityg.exceptions.BadSetupException;
 import edu.rit.entityg.treeimpl.GenericTree;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
+import edu.rit.entityg.utils.ExceptionUtils;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -194,7 +196,7 @@ public class EntityG extends Display {
      *         This parent node will be rendered on the graph.
      */
     // <editor-fold defaultstate="collapsed" desc="Setup absolute parent">
-    private GenericTreeNode<String> setupAbsoluteParent() {
+    private GenericTreeNode<String> setupAbsoluteParent() throws IllegalArgumentException {
         //TODO: move this somewhere else - maybe have it be an argument to the program
         loader.setBaseQuery( "SELECT * FROM customers WHERE " );
         loader.setBaseColumnName( "ContactName" );
@@ -203,7 +205,12 @@ public class EntityG extends Display {
         //Set a pattern
         loader.addPattern( "ContactName", Arrays.asList( children ) );
         //Get the first node group as an instance of a parent node
-        return loader.loadAbsoluteParent( "Kevin Battle", "ContactName" );
+        try {
+            GenericTreeNode<String> ret = loader.loadAbsoluteParent( "Kevin Battle", "ContactName" );
+            return ret;
+        } catch( BadSetupException bse ) {
+            throw new IllegalArgumentException( bse );
+        }
     }//</editor-fold>
 
     /**
@@ -321,11 +328,15 @@ public class EntityG extends Display {
                     }
                 } else {
                     //If they click on a "center node"
-                    if( treeNode.getDataHeader().equalsIgnoreCase( loader.getBaseColumnName() ) ) {
-                        treeNode = loader.loadInformationNodes( treeNode, treeNode.getData(), treeNode.getDataHeader() );
-                    } else {    //Else they clicked on an information node
-                        treeNode = loader.loadCenterNodes( treeNode, treeNode.getData(),
-                                                           treeNode.getDataHeader(), DEFAULT_MAX_NODES );
+                    try {
+                        if( treeNode.getDataHeader().equalsIgnoreCase( loader.getBaseColumnName() ) ) {
+                            treeNode = loader.loadInformationNodes( treeNode, treeNode.getData(), treeNode.getDataHeader() );
+                        } else {    //Else they clicked on an information node
+                            treeNode = loader.loadCenterNodes( treeNode, treeNode.getData(),
+                                                               treeNode.getDataHeader(), DEFAULT_MAX_NODES );
+                        }
+                    } catch( BadSetupException bse ) {
+                        ExceptionUtils.handleException( bse );
                     }
                     //Retrieve all children of this TreeNode and render it on the graph.
                     if( treeNode.hasChildren() ) {
