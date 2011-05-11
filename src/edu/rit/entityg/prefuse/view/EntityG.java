@@ -48,15 +48,6 @@ import prefuse.visual.VisualItem;
  */
 public class EntityG extends Display {
 
-    // <editor-fold defaultstate="collapsed" desc="Main">
-    public static void main( String[] args ) {
-        EntityG entityg = new EntityG();
-        JFrame frame = new JFrame( "EntityG - A Visualization for Data" );
-        frame.getContentPane().add( entityg );
-        frame.pack();
-        frame.setVisible( true );
-        frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    }//</editor-fold>
     /**
      * Data group name for the graph
      */
@@ -94,32 +85,96 @@ public class EntityG extends Display {
      */
     private GenericTree<String> tree = new GenericTree<String>();
     /**
-     * Default max number of nodes to display per each node-group.
-     */
-    private static final int DEFAULT_MAX_NODES = 7;
-    /**
      * The data loader for EntityG. In the future, there can be different data loaders (such as, from XML or
      * a CSV file).
      */
-    //TODO: Should allow 'DatabaseConnection' customization
-    private DatabaseLoader loader = new DatabaseLoader( DatabaseConnection.instance() );
+    private DatabaseLoader loader;
+    /**
+     * Default max number of nodes to display per each node-group.
+     */
+    private int defaultMaxNodes = 7;
+    
+    // <editor-fold defaultstate="collapsed" desc="EntityG field for database configuration">
+    private String host;
+    private String uid;
+    private String password = "";
+    private String schemaName;
+    private String baseQuery;
+    private String baseColumnName;
+    private String firstNodeData;
+    private String[] childrenColumnNames;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Setters">
+    public void setDefaultMaxNodes( int defaultMaxNodes ) {
+        this.defaultMaxNodes = defaultMaxNodes;
+    }
+
+    public void setBaseColumnName( String baseColumnName ) {
+        this.baseColumnName = baseColumnName;
+    }
+
+    public void setBaseQuery( String baseQuery ) {
+        this.baseQuery = baseQuery;
+    }
+
+    public void setChildrenColumnNames( String[] childrenColumnNames ) {
+        this.childrenColumnNames = childrenColumnNames;
+    }
+
+    public void setFirstNodeData( String firstNodeData ) {
+        this.firstNodeData = firstNodeData;
+    }
+
+    public void setHost( String host ) {
+        this.host = host;
+    }
+
+    public void setPassword( String password ) {
+        this.password = password;
+    }
+
+    public void setSchemaName( String schemaName ) {
+        this.schemaName = schemaName;
+    }
+
+    public void setUid( String uid ) {
+        this.uid = uid;
+    }// </editor-fold>
 
     /**
-     * Default constructor. Starts everything.
+     * Default constructor. Initializes the visualization.
      */
     public EntityG() {
         super( new Visualization() );
         displayNodeToDataNodeMap = new HashMap<Node, GenericTreeNode<String>>();
+    }
+
+    /**
+     * Try to make a connection to the database if we are loading information from a database.
+     */
+    public void connectToDatabase() {
+        DatabaseConnection.setProperties( host, schemaName, uid, password );
+        loader = new DatabaseLoader( DatabaseConnection.instance() );
+    }
+
+    /**
+     * Set things running.
+     */
+    public void start() {
         initializeGraph();
         m_vis.addGraph( GRAPH, graph );
-
         setupLabelRenderer();
         setupColorActions();
         setupMainAnimationLayout();
         setupWindow();
-
-        //Set things running.
         m_vis.run( DRAW );
+
+        JFrame frame = new JFrame( "EntityG - A Visualization for Data" );
+        frame.getContentPane().add( this );
+        frame.pack();
+        frame.setVisible( true );
+        frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
     }
 
     /**
@@ -175,6 +230,8 @@ public class EntityG extends Display {
         //arbitrary label.
         graph.addColumn( LABEL, String.class );
 
+        //TODO: when adding CSV / XML load implementations, change setupAbsoluteParent to allow for multiple
+        //data sources, instead of just database.
         GenericTreeNode<String> absoluteParent = setupAbsoluteParent();
         tree.setRoot( absoluteParent );
         //Add the parent node and its children to the graph
@@ -192,21 +249,19 @@ public class EntityG extends Display {
     /**
      * Sets up the first node group for this graph. This is where all customization for how the graph should first
      * appear should go.
+     * <p/><b>Note:</b> This method is an implementation for database loads only. Therefore, future work would mean
+     * creating a method like this for XML and CSV - where all 'loader' class data is set.
+     * 
      * @return A {@link GenericTreeNode} that contains a root node for this graph, and its immediate children.
      *         This parent node will be rendered on the graph.
      */
     // <editor-fold defaultstate="collapsed" desc="Setup absolute parent">
     private GenericTreeNode<String> setupAbsoluteParent() throws IllegalArgumentException {
-        //TODO: move this somewhere else - maybe have it be an argument to the program
-        loader.setBaseQuery( "SELECT * FROM customers WHERE " );
-        loader.setBaseColumnName( "ContactName" );
-        //Load data from VARDB
-        String[] children = { "Title", "CompanyName", "Addr1", "City", "State", "Zip" };
-        //Set a pattern
-        loader.addPattern( "ContactName", Arrays.asList( children ) );
-        //Get the first node group as an instance of a parent node
+        loader.setBaseQuery( baseQuery );
+        loader.setBaseColumnName( baseColumnName );
+        loader.addPattern( baseColumnName, Arrays.asList( childrenColumnNames ) );
         try {
-            GenericTreeNode<String> ret = loader.loadAbsoluteParent( "Kevin Battle", "ContactName" );
+            GenericTreeNode<String> ret = loader.loadAbsoluteParent( firstNodeData );
             return ret;
         } catch( BadSetupException bse ) {
             throw new IllegalArgumentException( bse );
@@ -330,10 +385,11 @@ public class EntityG extends Display {
                     //If they click on a "center node"
                     try {
                         if( treeNode.getDataHeader().equalsIgnoreCase( loader.getBaseColumnName() ) ) {
-                            treeNode = loader.loadInformationNodes( treeNode, treeNode.getData(), treeNode.getDataHeader() );
+                            treeNode = loader.loadInformationNodes( treeNode, treeNode.getData(),
+                                                                    treeNode.getDataHeader() );
                         } else {    //Else they clicked on an information node
                             treeNode = loader.loadCenterNodes( treeNode, treeNode.getData(),
-                                                               treeNode.getDataHeader(), DEFAULT_MAX_NODES );
+                                                               treeNode.getDataHeader(), defaultMaxNodes );
                         }
                     } catch( BadSetupException bse ) {
                         ExceptionUtils.handleException( bse );
