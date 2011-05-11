@@ -139,14 +139,15 @@ public class DatabaseLoader {
      * @param data
      * @param columnHeader
      */
-    public GenericTreeNode<String> loadAbsoluteParent( String data, String columnHeader )
-            throws BadSetupException, IllegalArgumentException {
-        if( baseQuery == null ) {
-            throw new IllegalArgumentException( "You must set a base query before loading any data." );
+    public GenericTreeNode<String> loadAbsoluteParent( String data ) throws BadSetupException,
+                                                                            IllegalArgumentException {
+        if( baseQuery == null || baseColumnName == null ) {
+            throw new IllegalArgumentException( "You must set a base query and base column header before loading "
+                                                + "any data." );
         }
-        List<String> childrenHeaders = patterns.get( columnHeader );
+        List<String> childrenHeaders = patterns.get( baseColumnName );
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
+            ResultSet rs = conn.executeQuery( baseQuery + baseColumnName + " = '" + data + "'" );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, childrenHeaders );
             if( results.isEmpty() ) {
                 throw new BadSetupException( "The information provided to setup the graph was invalid. "
@@ -157,7 +158,7 @@ public class DatabaseLoader {
                 throw new BadSetupException( "There are null values in your database which you want displayed. "
                                              + "Please make sure any columns with null values are ignored." );
             }
-            GenericTreeNode<String> rootParent = new GenericTreeNode<String>( data, columnHeader );
+            GenericTreeNode<String> rootParent = new GenericTreeNode<String>( data, baseColumnName );
             //Add the children data to the root parent
             for( int i = 0; i < results.size(); i++ ) {
                 rootParent.addChild( new GenericTreeNode<String>( results.get( i ), childrenHeaders.get( i ) ) );
