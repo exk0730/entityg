@@ -1,6 +1,7 @@
 package edu.rit.entityg.dataloaders;
 
 import edu.rit.entityg.database.DatabaseConnection;
+import edu.rit.entityg.exceptions.BadSetupException;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -138,19 +139,23 @@ public class DatabaseLoader {
      * @param data
      * @param columnHeader
      */
-    public GenericTreeNode<String> loadAbsoluteParent( String data, String columnHeader ) {
+    public GenericTreeNode<String> loadAbsoluteParent( String data, String columnHeader )
+            throws BadSetupException, IllegalArgumentException {
         if( baseQuery == null ) {
-            //TODO: do something - bad bad bad bad
+            throw new IllegalArgumentException( "You must set a base query before loading any data." );
         }
         List<String> childrenHeaders = patterns.get( columnHeader );
         try {
             ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, childrenHeaders );
             if( results.isEmpty() ) {
-                //TODO: means that the query was invalid / didn't return any information
+                throw new BadSetupException( "The information provided to setup the graph was invalid. "
+                                             + "You must provide specifications that allow EntityG to load data. "
+                                             + "You have provided specifications that do not give any data to "
+                                             + "EntityG." );
             } else if( childrenHeaders.size() > results.size() ) {
-                //TODO: means that the query returned null values which are not included in the results -
-                //we don't want "null" as a label for ANY node, even if the user wants that data in the graph
+                throw new BadSetupException( "There are null values in your database which you want displayed. "
+                                             + "Please make sure any columns with null values are ignored." );
             }
             GenericTreeNode<String> rootParent = new GenericTreeNode<String>( data, columnHeader );
             //Add the children data to the root parent
@@ -159,15 +164,8 @@ public class DatabaseLoader {
             }
             return rootParent;
         } catch( SQLException sqle ) {
-            //TODO: something meaningful
-            sqle.printStackTrace();
+            throw new BadSetupException( sqle.getMessage() );
         }
-        //TODO: an empty node, instead of null might be better here.
-        return null;
-    }
-
-    public GenericTreeNode<String> createAbsoluteParent( String label, String dataColumn ) {
-        return new GenericTreeNode<String>( label, dataColumn );
     }
 
     /**
@@ -180,31 +178,25 @@ public class DatabaseLoader {
      */
     public GenericTreeNode<String> loadInformationNodes( GenericTreeNode<String> parent,
                                                          String data,
-                                                         String columnHeader ) {
-        if( baseQuery == null ) {
-            //TODO: do something - bad bad bad bad
-        }
+                                                         String columnHeader ) throws BadSetupException {
         List<String> childrenHeaders = patterns.get( columnHeader );
         try {
             ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, childrenHeaders );
-            if( results.isEmpty() ) {
-                //TODO: means that the query was invalid / didn't return any information
-            } else if( childrenHeaders.size() > results.size() ) {
-                //TODO: means that the query returned null values which are not included in the results -
-                //we don't want "null" as a label for ANY node, even if the user wants that data in the graph
+            if( childrenHeaders.size() > results.size() ) {
+                throw new BadSetupException( "There are null values in your database which you want displayed. "
+                                             + "Please make sure any columns with null values are ignored." );
             }
-            //Add the children data to the root parent
-            for( int i = 0; i < results.size(); i++ ) {
-                parent.addChild( new GenericTreeNode<String>( results.get( i ), childrenHeaders.get( i ) ) );
+            if( !results.isEmpty() ) {
+                for( int i = 0; i < results.size(); i++ ) {
+                    //Add the children data to the root parent
+                    parent.addChild( new GenericTreeNode<String>( results.get( i ), childrenHeaders.get( i ) ) );
+                }
             }
             return parent;
         } catch( SQLException sqle ) {
-            //TODO: something meaningful
-            sqle.printStackTrace();
+            throw new BadSetupException( sqle.getMessage() );
         }
-        //TODO: an empty node, instead of null might be better here.
-        return null;
     }
 
     /**
@@ -219,10 +211,7 @@ public class DatabaseLoader {
     public GenericTreeNode<String> loadCenterNodes( GenericTreeNode<String> parent,
                                                     String data,
                                                     String columnHeader,
-                                                    int maxNodes ) {
-        if( baseQuery == null ) {
-            //TODO: BAD
-        }
+                                                    int maxNodes ) throws BadSetupException {
         try {
             ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
             ArrayList<ArrayList<String>> results = conn.getData( rs, baseColumnName );
@@ -237,8 +226,7 @@ public class DatabaseLoader {
                 parent.addChild( new GenericTreeNode<String>( result, baseColumnName ) );
             }
         } catch( SQLException sqle ) {
-            //TODO: something meaningful
-            sqle.printStackTrace();
+            throw new BadSetupException( sqle.getMessage() );
         }
         return parent;
     }
