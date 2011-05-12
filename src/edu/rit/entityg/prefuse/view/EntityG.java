@@ -7,6 +7,7 @@ import edu.rit.entityg.treeimpl.GenericTree;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
 import edu.rit.entityg.utils.ExceptionUtils;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,6 +42,8 @@ import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
 import prefuse.visual.VisualItem;
 
+import static edu.rit.entityg.prefuse.GraphConfig.*;
+
 /**
  * Main entry point to EntityG. Creates the Display used for the entity-association graph.
  * @date May 6, 2011
@@ -49,30 +52,6 @@ import prefuse.visual.VisualItem;
 public class EntityG extends Display {
 
     /**
-     * Data group name for the graph
-     */
-    private static final String GRAPH = "graph";
-    /**
-     * Data group name for nodes
-     */
-    private static final String NODES = "graph.nodes";
-    /**
-     * Data group name for edges
-     */
-    private static final String EDGES = "graph.edges";
-    /**
-     * Data group name for node-labels
-     */
-    public static final String LABEL = "data";
-    /**
-     * Name of the action for "drawing"
-     */
-    public static final String DRAW = "draw";
-    /**
-     * Name of the action for "animating"
-     */
-    private static final String ANIMATE = "animate";
-    /**
      * The {@link Graph} object we are displaying.
      */
     private Graph graph;
@@ -80,6 +59,10 @@ public class EntityG extends Display {
      * A mapping of a {@link prefuse.data.Node} object to the {@link GenericTreeNode} that contains its 'real' data.
      */
     private HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
+    /**
+     * A list of all {@link Edge}s that exist on the graph.
+     */
+    private ArrayList<Edge> edges = new ArrayList<Edge>();
     /**
      * Tree that contains a root node, and all of its children.
      */
@@ -93,8 +76,7 @@ public class EntityG extends Display {
      * Default max number of nodes to display per each node-group.
      */
     private int defaultMaxNodes = 7;
-    
-    // <editor-fold defaultstate="collapsed" desc="EntityG field for database configuration">
+    // <editor-fold defaultstate="collapsed" desc="EntityG fields for database configuration">
     private String host;
     private String uid;
     private String password = "";
@@ -105,11 +87,11 @@ public class EntityG extends Display {
     private String[] childrenColumnNames;
     // </editor-fold>
 
-    // <editor-fold defaultstate="collapsed" desc="Setters">
     public void setDefaultMaxNodes( int defaultMaxNodes ) {
         this.defaultMaxNodes = defaultMaxNodes;
     }
 
+    // <editor-fold defaultstate="collapsed" desc="Database field setters">
     public void setBaseColumnName( String baseColumnName ) {
         this.baseColumnName = baseColumnName;
     }
@@ -163,12 +145,12 @@ public class EntityG extends Display {
      */
     public void start() {
         initializeGraph();
-        m_vis.addGraph( GRAPH, graph );
+        m_vis.addGraph( GRAPH.getLabel(), graph );
         setupLabelRenderer();
         setupColorActions();
         setupMainAnimationLayout();
         setupWindow();
-        m_vis.run( DRAW );
+        m_vis.run( DRAW.getLabel() );
 
         JFrame frame = new JFrame( "EntityG - A Visualization for Data" );
         frame.getContentPane().add( this );
@@ -185,7 +167,7 @@ public class EntityG extends Display {
      */
     private Node getVisualNodeFromTreeNode( GenericTreeNode<String> node ) {
         for( Node n : getNodes() ) {
-            if( n.getString( LABEL ).equalsIgnoreCase( node.getData() ) ) {
+            if( n.getString( LABEL.getLabel() ).equalsIgnoreCase( node.getData() ) ) {
                 return n;
             }
         }
@@ -209,11 +191,11 @@ public class EntityG extends Display {
      * {@link VisualItem}s.
      */
     public List<VisualItem> getNodesAsVisualItems() {
-        TupleSet nodes = m_vis.getGroup( NODES );
+        TupleSet nodes = m_vis.getGroup( NODES.getLabel() );
         VisualItem[] items = new VisualItem[nodes.getTupleCount()];
         int tupleCounter = 0;
         for( Iterator tupleIter = nodes.tuples(); tupleIter.hasNext(); ) {
-            items[tupleCounter] = m_vis.getVisualItem( NODES, (Tuple) tupleIter.next() );
+            items[tupleCounter] = m_vis.getVisualItem( NODES.getLabel(), (Tuple) tupleIter.next() );
             tupleCounter++;
         }
         return Arrays.asList( items );
@@ -228,7 +210,7 @@ public class EntityG extends Display {
         //Add a new column to the graph. This tells the Graph that our nodes will display data as Strings, and
         //tells the graph the data group name of each label - in this case, "data". Technically, this is an
         //arbitrary label.
-        graph.addColumn( LABEL, String.class );
+        graph.addColumn( LABEL.getLabel(), String.class );
 
         //TODO: when adding CSV / XML load implementations, change setupAbsoluteParent to allow for multiple
         //data sources, instead of just database.
@@ -236,11 +218,11 @@ public class EntityG extends Display {
         tree.setRoot( absoluteParent );
         //Add the parent node and its children to the graph
         Node root = graph.addNode();
-        root.setString( LABEL, absoluteParent.getData() );
+        root.setString( LABEL.getLabel(), absoluteParent.getData() );
         displayNodeToDataNodeMap.put( root, absoluteParent );
         for( GenericTreeNode<String> aChild : absoluteParent.getChildren() ) {
             Node nodeChild = graph.addNode();
-            nodeChild.setString( LABEL, aChild.getData() );
+            nodeChild.setString( LABEL.getLabel(), aChild.getData() );
             displayNodeToDataNodeMap.put( nodeChild, aChild );
             graph.addEdge( root, nodeChild );
         }
@@ -274,7 +256,7 @@ public class EntityG extends Display {
     // <editor-fold defaultstate="collapsed" desc="Setup label renderer">
     private void setupLabelRenderer() {
         DefaultRendererFactory drf = new DefaultRendererFactory();
-        drf.setDefaultRenderer( new LabelRenderer( LABEL ) );
+        drf.setDefaultRenderer( new LabelRenderer( LABEL.getLabel() ) );
         m_vis.setRendererFactory( drf );
     }// </editor-fold>
 
@@ -284,16 +266,16 @@ public class EntityG extends Display {
     // <editor-fold defaultstate="collapsed" desc="Setup color actions">
     private void setupColorActions() {
         //Set the text color to red for a node
-        ColorAction nText = new ColorAction( NODES, VisualItem.TEXTCOLOR );
+        ColorAction nText = new ColorAction( NODES.getLabel(), VisualItem.TEXTCOLOR );
         nText.setDefaultColor( ColorLib.rgb( 100, 0, 0 ) );
         //Set the outline for a node to black
-        ColorAction nStroke = new ColorAction( NODES, VisualItem.STROKECOLOR );
+        ColorAction nStroke = new ColorAction( NODES.getLabel(), VisualItem.STROKECOLOR );
         nStroke.setDefaultColor( ColorLib.gray( 0 ) );
         //Set the fill color for a node to white
-        ColorAction nFill = new ColorAction( NODES, VisualItem.FILLCOLOR );
+        ColorAction nFill = new ColorAction( NODES.getLabel(), VisualItem.FILLCOLOR );
         nFill.setDefaultColor( ColorLib.gray( 255 ) );
         //Set the edges of the graph to black
-        ColorAction nEdges = new ColorAction( EDGES, VisualItem.STROKECOLOR );
+        ColorAction nEdges = new ColorAction( EDGES.getLabel(), VisualItem.STROKECOLOR );
         nEdges.setDefaultColor( ColorLib.gray( 0 ) );
 
         //Add the ColorActions to an ActionList
@@ -303,7 +285,7 @@ public class EntityG extends Display {
         draw.add( nFill );
         draw.add( nEdges );
         //Add the 'draw' action to the visualization
-        m_vis.putAction( DRAW, draw );
+        m_vis.putAction( DRAW.getLabel(), draw );
     }// </editor-fold>
 
     /**
@@ -326,18 +308,18 @@ public class EntityG extends Display {
         fsim.addForce( new SpringForce( springCoeff, defaultLength ) );
 
         //Create a customized force directed layout from the force simulator
-        ForceDirectedLayout fdl = new CustomizedForceDirectedLayout( GRAPH, fsim, false );
+        ForceDirectedLayout fdl = new CustomizedForceDirectedLayout( GRAPH.getLabel(), fsim, false );
 
         //Create a new action list for animating the nodes/edges.
         //These animations should run for the entirety of the program.
         ActionList animate = new ActionList( Activity.INFINITY );
         animate.add( fdl );
         animate.add( new RepaintAction() );
-        m_vis.putAction( ANIMATE, animate );
+        m_vis.putAction( ANIMATE.getLabel(), animate );
 
         //Schedule the DRAW action to run before the ANIMATE action. The ANIMATE action will wait for
         //the DRAW action to run.
-        m_vis.runAfter( DRAW, ANIMATE );
+        m_vis.runAfter( DRAW.getLabel(), ANIMATE.getLabel() );
     }// </editor-fold>
 
     /**
@@ -452,11 +434,11 @@ public class EntityG extends Display {
                     continue;
                 }
                 Node newNode = graph.addNode();
-                newNode.setString( LABEL, child.getData() );
+                newNode.setString( LABEL.getLabel(), child.getData() );
                 displayNodeToDataNodeMap.put( newNode, child );
                 graph.addEdge( newNode, nodeParent );
             }
-            m_vis.run( DRAW );
+            m_vis.run( DRAW.getLabel() );
         }
     }// </editor-fold>
 }
