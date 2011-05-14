@@ -3,11 +3,9 @@ package edu.rit.entityg.prefuse.view;
 import edu.rit.entityg.database.DatabaseConnection;
 import edu.rit.entityg.dataloaders.DatabaseLoader;
 import edu.rit.entityg.exceptions.BadSetupException;
-import edu.rit.entityg.treeimpl.GenericTree;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
 import edu.rit.entityg.utils.ExceptionUtils;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -59,14 +57,6 @@ public class EntityG extends Display {
      * A mapping of a {@link prefuse.data.Node} object to the {@link GenericTreeNode} that contains its 'real' data.
      */
     private HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
-    /**
-     * A list of all {@link Edge}s that exist on the graph.
-     */
-    private ArrayList<Edge> edges = new ArrayList<Edge>();
-    /**
-     * Tree that contains a root node, and all of its children.
-     */
-    private GenericTree<String> tree = new GenericTree<String>();
     /**
      * The data loader for EntityG. In the future, there can be different data loaders (such as, from XML or
      * a CSV file).
@@ -175,6 +165,15 @@ public class EntityG extends Display {
     }
 
     /**
+     * Tries to remove an {@link Edge} from the graph. If it doesn't succeed, that means there wasn't an existing edge,
+     * so nothing happens.
+     * @param e The {@link Edge} we want to remove.
+     */
+    public void tryRemoveEdge( Edge e ) {
+        graph.getEdgeTable().removeTuple( e );
+    }
+
+    /**
      * Returns a list of nodes that are currently displayed (visible or not) on this graph as a list of
      * {@link Node}s.
      */
@@ -203,7 +202,6 @@ public class EntityG extends Display {
 
     /**
      * Initialize Nodes and Edges for this graph.
-     * @return A Graph object that contains the initial nodes and edges that will be displayed.
      */
     private void initializeGraph() {
         graph = new Graph();
@@ -215,17 +213,11 @@ public class EntityG extends Display {
         //TODO: when adding CSV / XML load implementations, change setupAbsoluteParent to allow for multiple
         //data sources, instead of just database.
         GenericTreeNode<String> absoluteParent = setupAbsoluteParent();
-        tree.setRoot( absoluteParent );
         //Add the parent node and its children to the graph
         Node root = graph.addNode();
         root.setString( LABEL.getLabel(), absoluteParent.getData() );
         displayNodeToDataNodeMap.put( root, absoluteParent );
-        for( GenericTreeNode<String> aChild : absoluteParent.getChildren() ) {
-            Node nodeChild = graph.addNode();
-            nodeChild.setString( LABEL.getLabel(), aChild.getData() );
-            displayNodeToDataNodeMap.put( nodeChild, aChild );
-            graph.addEdge( root, nodeChild );
-        }
+        renderNewNodes( root, absoluteParent );
     }
 
     /**
@@ -337,6 +329,36 @@ public class EntityG extends Display {
     }// </editor-fold>
 
     /**
+     * Renders newly-added {@link Node}s and their {@link Edge}s.
+     * <p/><b>Note:</b>Currently, the graph will <i>not</i> render nodes which already exist in the graph. This
+     * means that there are no duplicates of a node on the graph. Instead, there will be an {@link Edge} created
+     * between <code>nodeParent</code> and the pre-existing {@link Node}.
+     * @param nodeParent The {@link Node} that was clicked on.
+     * @param treeParent The {@link GenericTreeNode} that contains the data of the children of
+     *                   <code>nodeParent</code>.
+     */
+    private void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
+        for( GenericTreeNode<String> child : treeParent.getChildren() ) {
+            Node n = getVisualNodeFromTreeNode( child );
+            /**
+             * If a node representing <code>child</code> already exists, then we should just add an edge from that node
+             * to <code>nodeParent</code>. However, if an {@link Edge} exists between <code>child</code> and
+             * <code>nodeParent</code>, we want to remove that {@link Edge}, instead of create a new one.
+             */
+            if( n != null ) {
+                Edge e = graph.addEdge( n, nodeParent );
+                tryRemoveEdge( e );
+                continue;
+            }
+            Node newNode = graph.addNode();
+            newNode.setString( LABEL.getLabel(), child.getData() );
+            displayNodeToDataNodeMap.put( newNode, child );
+            graph.addEdge( nodeParent, newNode );
+        }
+        m_vis.run( DRAW.getLabel() );
+    }
+
+    /**
      * Customized ControlAdapter specifically used when the user clicks on a {@link Node}.
      * {@link NodeControl} must be defined in this class because it needs access to the {@link Graph} object of
      * EntityG, as well as the backing {@link Visualization}.
@@ -414,31 +436,6 @@ public class EntityG extends Display {
                 return false;
             }
             return ((NodeItem) ni.getChild( 0 )).isVisible();
-        }
-
-        /**
-         * Renders the newly-added {@link Node}s and their {@link Edge}s.
-         * <p/><b>Note:</b>Currently, the graph will <i>not</i> render nodes which already exist in the graph. This
-         * means that there are no duplicates of a node on the graph. Instead, there will be an {@link Edge} created
-         * between <code>nodeParent</code> and the pre-existing {@link Node}.
-         * @param nodeParent The {@link Node} that was clicked on.
-         * @param treeParent The {@link GenericTreeNode} that contains the data of the children of
-         *                   <code>nodeParent</code>.
-         */
-        private void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
-            for( GenericTreeNode<String> child : treeParent.getChildren() ) {
-                Node n = getVisualNodeFromTreeNode( child );
-                if( n != null ) {
-                    //TODO: check for edge existence, otherwise we'll be adding a redundant edge to the graph.
-                    graph.addEdge( n, nodeParent );
-                    continue;
-                }
-                Node newNode = graph.addNode();
-                newNode.setString( LABEL.getLabel(), child.getData() );
-                displayNodeToDataNodeMap.put( newNode, child );
-                graph.addEdge( newNode, nodeParent );
-            }
-            m_vis.run( DRAW.getLabel() );
         }
     }// </editor-fold>
 }
