@@ -165,15 +165,6 @@ public class EntityG extends Display {
     }
 
     /**
-     * Tries to remove an {@link Edge} from the graph. If it doesn't succeed, that means there wasn't an existing edge,
-     * so nothing happens.
-     * @param e The {@link Edge} we want to remove.
-     */
-    public void tryRemoveEdge( Edge e ) {
-        graph.getEdgeTable().removeTuple( e );
-    }
-
-    /**
      * Returns a list of nodes that are currently displayed (visible or not) on this graph as a list of
      * {@link Node}s.
      */
@@ -346,8 +337,9 @@ public class EntityG extends Display {
              * <code>nodeParent</code>, we want to remove that {@link Edge}, instead of create a new one.
              */
             if( n != null ) {
-                Edge e = graph.addEdge( n, nodeParent );
-                tryRemoveEdge( e );
+                if( !checkForExistingEdge( nodeParent, n ) ) {
+                    graph.addEdge( nodeParent, n );
+                }
                 continue;
             }
             Node newNode = graph.addNode();
@@ -356,6 +348,19 @@ public class EntityG extends Display {
             graph.addEdge( nodeParent, newNode );
         }
         m_vis.run( DRAW.getLabel() );
+    }
+
+    /**
+     * Checks for an existing edge between <code>source</code> and <code>target</code>.
+     * @param source The source {@link Node}.
+     * @param target The target {@link Node}.
+     * @return True if there exists an {@link Edge} between <code>source</code> and <code>target</code>.
+     */
+    private boolean checkForExistingEdge( Node source, Node target ) {
+        if( graph.getEdge( source, target ) != null || graph.getEdge( target, source ) != null ) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -417,9 +422,11 @@ public class EntityG extends Display {
             NodeItem ni = (NodeItem) item;
             for( int i = 0; i < ni.getChildCount(); i++ ) {
                 NodeItem child = (NodeItem) ni.getChild( i );
-                EdgeItem ei = (EdgeItem) child.getParentEdge();
+                for( Iterator<EdgeItem> edgesIter = child.edges(); edgesIter.hasNext(); ) {
+                    EdgeItem ei = (EdgeItem) edgesIter.next();
+                    ei.setVisible( visibility );
+                }
                 child.setVisible( visibility );
-                ei.setVisible( visibility );
                 setVisibilityOfAllChildren( child, visibility );
             }
         }
