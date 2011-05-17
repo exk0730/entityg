@@ -38,7 +38,7 @@ import prefuse.data.Node;
 public class DatabaseLoader {
 
     /**
-     * A patter basically describes the relationship between a parent and a child. When creating a node group,
+     * A pattern basically describes the relationship between a parent and a child. When creating a node group,
      * there should be a parent node, followed by its children, which describe the parent node (or display some
      * information about the parent). In the case of a database pattern, the key should be the parent-header, and
      * the value should be a list of all column headers which describe the parent. <p/>As an example, "FirstName" could
