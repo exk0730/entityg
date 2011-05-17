@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.ActionList;
@@ -370,6 +371,33 @@ public class EntityG extends Display {
      */
     // <editor-fold defaultstate="collapsed" desc="Custom node control private class">
     private class NodeControl extends ControlAdapter {
+        
+        private VisualItem hovered;
+
+        /**
+         * Clear the tool tip text.
+         */
+        @Override
+        public void itemExited( VisualItem item, MouseEvent e ) {
+            if( hovered != null ) {
+                setToolTipText( null );
+                hovered = null;
+            }
+        }
+
+        /**
+         * Set the tool tip text for a hovered {@link VisualItem} that is an instance of a {@link Node}.
+         */
+        @Override
+        public void itemEntered( VisualItem item, MouseEvent e ) {
+            if( item.getSourceTuple() instanceof Node ) {
+                hovered = item;
+                Node source = (Node) item.getSourceTuple();
+                GenericTreeNode<String> treeNode = displayNodeToDataNodeMap.get( source );
+                setToolTipText( treeNode.getDataHeader() );
+                ToolTipManager.sharedInstance().mouseMoved( e );
+            }
+        }
 
         @Override
         public void itemClicked( VisualItem item, MouseEvent e ) {
