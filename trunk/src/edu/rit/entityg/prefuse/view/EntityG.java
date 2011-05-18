@@ -64,6 +64,10 @@ public class EntityG extends Display {
      */
     private DatabaseLoader loader;
     /**
+     * Default flag to say whether tool tips should be displayed when hovering over {@link Node}s.
+     */
+    private boolean useToolTip = false;
+    /**
      * Default max number of nodes to display per each node-group.
      */
     private int defaultMaxNodes = 7;
@@ -80,6 +84,10 @@ public class EntityG extends Display {
 
     public void setDefaultMaxNodes( int defaultMaxNodes ) {
         this.defaultMaxNodes = defaultMaxNodes;
+    }
+
+    public void setUseToolTip( boolean useToolTip ) {
+        this.useToolTip = useToolTip;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Database field setters">
@@ -169,7 +177,7 @@ public class EntityG extends Display {
      * Returns a list of nodes that are currently displayed (visible or not) on this graph as a list of
      * {@link Node}s.
      */
-    public List<Node> getNodes() {
+    private List<Node> getNodes() {
         Node[] nodes = new Node[graph.getNodeCount()];
         for( int i = 0; i < graph.getNodeCount(); i++ ) {
             nodes[i] = graph.getNode( i );
@@ -181,7 +189,7 @@ public class EntityG extends Display {
      * Returns a list of nodes that are currently displayed (visible or not) on this graph as a list of
      * {@link VisualItem}s.
      */
-    public List<VisualItem> getNodesAsVisualItems() {
+    private List<VisualItem> getNodesAsVisualItems() {
         TupleSet nodes = m_vis.getGroup( NODES.getLabel() );
         VisualItem[] items = new VisualItem[nodes.getTupleCount()];
         int tupleCounter = 0;
@@ -322,7 +330,7 @@ public class EntityG extends Display {
 
     /**
      * Renders newly-added {@link Node}s and their {@link Edge}s.
-     * <p/><b>Note:</b>Currently, the graph will <i>not</i> render nodes which already exist in the graph. This
+     * <p/><b>Note:</b> Currently, the graph will <i>not</i> render nodes which already exist in the graph. This
      * means that there are no duplicates of a node on the graph. Instead, there will be an {@link Edge} created
      * between <code>nodeParent</code> and the pre-existing {@link Node}.
      * @param nodeParent The {@link Node} that was clicked on.
@@ -335,7 +343,7 @@ public class EntityG extends Display {
             /**
              * If a node representing <code>child</code> already exists, then we should just add an edge from that node
              * to <code>nodeParent</code>. However, if an {@link Edge} exists between <code>child</code> and
-             * <code>nodeParent</code>, we want to remove that {@link Edge}, instead of create a new one.
+             * <code>nodeParent</code>, we don't want to create a duplicate {@link Edge}.
              */
             if( n != null ) {
                 if( !checkForExistingEdge( nodeParent, n ) ) {
@@ -371,7 +379,7 @@ public class EntityG extends Display {
      */
     // <editor-fold defaultstate="collapsed" desc="Custom node control private class">
     private class NodeControl extends ControlAdapter {
-        
+
         private VisualItem hovered;
 
         /**
@@ -379,6 +387,7 @@ public class EntityG extends Display {
          */
         @Override
         public void itemExited( VisualItem item, MouseEvent e ) {
+            if( !useToolTip ) return;
             if( hovered != null ) {
                 setToolTipText( null );
                 hovered = null;
@@ -390,6 +399,7 @@ public class EntityG extends Display {
          */
         @Override
         public void itemEntered( VisualItem item, MouseEvent e ) {
+            if( !useToolTip ) return;
             if( item.getSourceTuple() instanceof Node ) {
                 hovered = item;
                 Node source = (Node) item.getSourceTuple();
