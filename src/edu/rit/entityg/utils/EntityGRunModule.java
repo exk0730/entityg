@@ -30,6 +30,7 @@ public class EntityGRunModule {
     private static final String NODE_DATA = "nodedata";
     private static final String CHILDREN_COLUMNS = "childrencolumns";
     private static final String DEFAULT_MAX_NODES = "maxnodes";
+    private static final String USE_TOOL_TIP = "usetooltip";
     private static final Options options = new Options();
     private EntityG entityG;
     public DataSourceType dsType = null;
@@ -128,6 +129,10 @@ public class EntityGRunModule {
                 throw e;
             }
         }
+
+        if( line.hasOption( USE_TOOL_TIP ) ) {
+            entityG.setUseToolTip( true );
+        }
     }
 
     /**
@@ -216,6 +221,9 @@ public class EntityGRunModule {
                 withDescription( "Max number of children nodes that should be display for a given parent." ).
                 create( DEFAULT_MAX_NODES );
 
+        Option useToolTipOption = new Option( USE_TOOL_TIP,
+                                              "Use a Tool Tip to display what each node's data represents." );
+
         options.addOption( dataSourceOption );
         options.addOption( hostOption );
         options.addOption( usernameOption );
@@ -226,6 +234,7 @@ public class EntityGRunModule {
         options.addOption( firstNodeDataOption );
         options.addOption( childrenOption );
         options.addOption( maxNodesOption );
+        options.addOption( useToolTipOption );
     } //</editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Main">
