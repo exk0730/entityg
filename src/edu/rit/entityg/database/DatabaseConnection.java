@@ -30,13 +30,15 @@ public class DatabaseConnection {
     /**
      * Default static configuration variables
      */
-    private static final String HOST = "localhost:3307";
+    private static final String HOST = "localhost";
+    private static final String PORT = "3307";
     private static final String DATABASE = "vardb";
     private static final String UID = "root";
     private static final String PASS = "";
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String URL = "jdbc:mysql://";
     private String host = HOST;
+    private String port = PORT;
     private String database = DATABASE;
     private String uid = UID;
     private String password = PASS;
@@ -54,13 +56,14 @@ public class DatabaseConnection {
     public final static Properties setup = new Properties();
 
     static {
-        setup.setProperty( "url", URL + HOST + "/" + DATABASE + "?zeroDateTimeBehavior=convertToNull" );
+        setup.setProperty( "url", URL + HOST + ":" + PORT + "/" + DATABASE + "?zeroDateTimeBehavior=convertToNull" );
         setup.setProperty( "uid", UID );
         setup.setProperty( "password", PASS );
     }
 
-    public static void setProperties( String host, String database, String uid, String password ) {
+    public static void setProperties( String host, String port, String database, String uid, String password ) {
         setup.clear();
+        setup.setProperty( "port", port );
         setup.setProperty( "host", host );
         setup.setProperty( "database", database );
         setup.setProperty( "uid", uid );
@@ -86,15 +89,21 @@ public class DatabaseConnection {
     private DatabaseConnection( Properties props ) {
         if( props.containsKey( "host" ) ) {
             host = props.getProperty( "host" );
-        } if( props.containsKey( "database" ) ) {
+        }
+        if( props.containsKey( "port" ) ) {
+            port = props.getProperty( "port" );
+        }
+        if( props.containsKey( "database" ) ) {
             database = props.getProperty( "database" );
-        } if( props.containsKey( "uid" ) ) {
+        }
+        if( props.containsKey( "uid" ) ) {
             uid = props.getProperty( "uid" );
-        } if( props.containsKey( "password" ) ) {
+        }
+        if( props.containsKey( "password" ) ) {
             password = props.getProperty( "password" );
         }
 
-        String url = URL + host + "/" + database + "?zeroDateTimeBehavior=convertToNull";
+        String url = URL + host + ":" + port + "/" + database + "?zeroDateTimeBehavior=convertToNull";
         connect( DRIVER, url, uid, password );
     }
 
