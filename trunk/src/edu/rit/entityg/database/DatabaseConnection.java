@@ -10,6 +10,7 @@
 package edu.rit.entityg.database;
 
 import edu.rit.entityg.utils.ExceptionUtils;
+import edu.rit.entityg.utils.Logging;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,14 +35,14 @@ public class DatabaseConnection {
     private static final String PORT = "3307";
     private static final String DATABASE = "vardb";
     private static final String UID = "root";
-    private static final String PASS = "";
+    private static final String PASSWORD = "";
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String URL = "jdbc:mysql://";
     private String host = HOST;
     private String port = PORT;
     private String database = DATABASE;
     private String uid = UID;
-    private String password = PASS;
+    private String password = PASSWORD;
     /**
      * Connection object
      */
@@ -58,16 +59,45 @@ public class DatabaseConnection {
     static {
         setup.setProperty( "url", URL + HOST + ":" + PORT + "/" + DATABASE + "?zeroDateTimeBehavior=convertToNull" );
         setup.setProperty( "uid", UID );
-        setup.setProperty( "password", PASS );
+        setup.setProperty( "password", PASSWORD );
     }
 
     public static void setProperties( String host, String port, String database, String uid, String password ) {
         setup.clear();
-        setup.setProperty( "port", port );
-        setup.setProperty( "host", host );
-        setup.setProperty( "database", database );
-        setup.setProperty( "uid", uid );
-        setup.setProperty( "password", password );
+        if( host.isEmpty() || host.equalsIgnoreCase( "null" ) || host.equalsIgnoreCase( "" ) ) {
+            Logging.log( host + " has an invalid value. Using the default value: " + HOST );
+            setup.setProperty( "host", HOST );
+        } else {
+            setup.setProperty( "host", host );
+        }
+
+        if( port.isEmpty() || port.equalsIgnoreCase( "null" ) || port.equalsIgnoreCase( "" ) ) {
+            Logging.log( port + " has an invalid value. Using the default value: " + PORT );
+            setup.setProperty( "port", PORT );
+        } else {
+            setup.setProperty( "port", port );
+        }
+
+        if( uid.isEmpty() || uid.equalsIgnoreCase( "null" ) || uid.equalsIgnoreCase( "" ) ) {
+            Logging.log( uid + " has an invalid value. Using the default value: " + UID );
+            setup.setProperty( "uid", UID );
+        } else {
+            setup.setProperty( "uid", uid );
+        }
+
+        if( password.isEmpty() || password.equalsIgnoreCase( "null" ) || password.equalsIgnoreCase( "" ) ) {
+            Logging.log( password + " has an invalid value. Using the default value: " + PASSWORD );
+            setup.setProperty( "password", PASSWORD );
+        } else {
+            setup.setProperty( "password", password );
+        }
+
+        if( database.isEmpty() || database.equalsIgnoreCase( "null" ) || database.equalsIgnoreCase( "" ) ) {
+            Logging.log( database + " has an invalid value. Using the default value: " + DATABASE );
+            setup.setProperty( "database", DATABASE );
+        } else {
+            setup.setProperty( "database", database );
+        }
     }
 
     /**
