@@ -14,7 +14,8 @@ import static edu.rit.entityg.configure.EntityGOptions.*;
 
 /**
  * Runs the EntityG program after validating command-line arguments. This class should be used only when running
- * EntityG as a standalone application.
+ * EntityG as a standalone application. In the case that EntityG will be run as a standalone application, any
+ * options set with this class will override any options set in {@link EntityGIniFile}.
  * <br/>
  * <br/>
  * <b>Note:</b> See {@link EntityGIniFile} for a list of possible options that can be specified
