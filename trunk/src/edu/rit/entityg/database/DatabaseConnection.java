@@ -65,35 +65,35 @@ public class DatabaseConnection {
     public static void setProperties( String host, String port, String database, String uid, String password ) {
         setup.clear();
         if( host.isEmpty() || host.equalsIgnoreCase( "null" ) || host.equalsIgnoreCase( "" ) ) {
-            Logging.log( host + " has an invalid value. Using the default value: " + HOST );
+            Logging.log( "'host' has an invalid value. Using the default value: " + HOST );
             setup.setProperty( "host", HOST );
         } else {
             setup.setProperty( "host", host );
         }
 
         if( port.isEmpty() || port.equalsIgnoreCase( "null" ) || port.equalsIgnoreCase( "" ) ) {
-            Logging.log( port + " has an invalid value. Using the default value: " + PORT );
+            Logging.log( "'port' has an invalid value. Using the default value: " + PORT );
             setup.setProperty( "port", PORT );
         } else {
             setup.setProperty( "port", port );
         }
 
         if( uid.isEmpty() || uid.equalsIgnoreCase( "null" ) || uid.equalsIgnoreCase( "" ) ) {
-            Logging.log( uid + " has an invalid value. Using the default value: " + UID );
+            Logging.log( "'uid' has an invalid value. Using the default value: " + UID );
             setup.setProperty( "uid", UID );
         } else {
             setup.setProperty( "uid", uid );
         }
 
-        if( password.isEmpty() || password.equalsIgnoreCase( "null" ) || password.equalsIgnoreCase( "" ) ) {
-            Logging.log( password + " has an invalid value. Using the default value: " + PASSWORD );
+        if( password.equalsIgnoreCase( "null" ) ) {
+            Logging.log( "'password' has an invalid value. Using the default value: " + PASSWORD );
             setup.setProperty( "password", PASSWORD );
         } else {
             setup.setProperty( "password", password );
         }
 
         if( database.isEmpty() || database.equalsIgnoreCase( "null" ) || database.equalsIgnoreCase( "" ) ) {
-            Logging.log( database + " has an invalid value. Using the default value: " + DATABASE );
+            Logging.log( "'database' has an invalid value. Using the default value: " + DATABASE );
             setup.setProperty( "database", DATABASE );
         } else {
             setup.setProperty( "database", database );
