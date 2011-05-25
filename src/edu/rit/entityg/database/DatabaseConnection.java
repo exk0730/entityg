@@ -9,7 +9,7 @@
  */
 package edu.rit.entityg.database;
 
-import edu.rit.entityg.utils.Logging;
+import edu.rit.entityg.utils.ExceptionUtils;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -120,11 +120,10 @@ public class DatabaseConnection {
             Class.forName( driver );
             connect = DriverManager.getConnection( url, uid, pass );
         } catch( ClassNotFoundException cnfe ) {
-            Logging.log( "Class " + driver + " has not been found. Terminating the program.", this.getClass() );
+            ExceptionUtils.handleException( cnfe );
             System.exit( 1 );
         } catch( SQLException sqle ) {
-            Logging.log( "The application has encountered an error when trying to establish a connection to the "
-                         + "database. Please check the log files for more information.", this.getClass() );
+            ExceptionUtils.handleException( sqle );
             System.exit( 1 );
         }
     }
