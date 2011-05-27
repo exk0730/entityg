@@ -337,6 +337,16 @@ public class DatabaseConnection {
         return ret;
     }
 
+    /**
+     * Gets a single row's data. This differs from {@link DatabaseConnection#getSingleRow(java.sql.ResultSet)} because
+     * it also accepts a list of column headers to specify what data we want to retrieve from the {@link ResultSet}.
+     * @param rs The {@link ResultSet} object we want to retrieve data from.
+     * @param columnHeaders A list of strings which represent columns within <code>rs</code>.
+     * @return A list of values after retrieving data from <code>rs</code> or an empty list of <code>rs</code> had no
+     *         results. <br/><b>Note:</b> If a column was <code>null</code> or had a value of "null", that column's
+     *         value will not be returned in this list; instead, it will be skipped.
+     * @throws SQLException
+     */
     public ArrayList<String> getSingleRowFromColumnHeaders( ResultSet rs, List<String> columnHeaders )
             throws SQLException {
         ArrayList<String> ret = new ArrayList<String>();
