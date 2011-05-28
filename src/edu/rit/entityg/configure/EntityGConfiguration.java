@@ -12,6 +12,7 @@ import static edu.rit.entityg.configure.EntityGOptions.*;
  * @date May 24, 2011
  * @author Eric Kisner
  */
+//TODO: fix this class. durp.
 public class EntityGConfiguration {
 
     private EntityGIniFile entitygINI;
