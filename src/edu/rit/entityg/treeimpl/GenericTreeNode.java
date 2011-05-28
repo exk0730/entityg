@@ -1,9 +1,7 @@
 package edu.rit.entityg.treeimpl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,20 +13,15 @@ public class GenericTreeNode<T> {
 
     private T displayData;
     private T dataHeader;
-    /**
-     * A node may have hidden data which should not be displayed to the user.
-     * For example: if dealing with Primary Key IDs from a database, you can store these as hidden data
-     * in the node. This is kept in a map to allow the hidden data to be keyed.
-     */
-    private Map<T, T> hiddenData;
     private List<GenericTreeNode<T>> children;
+    private boolean isCenterNode;
 
     /**
      * Default constructor. Allows for manual data setting.
      */
-    public GenericTreeNode() {
+    public GenericTreeNode( boolean isCenterNode ) {
         children = new ArrayList<GenericTreeNode<T>>();
-        hiddenData = new HashMap<T, T>();
+        this.isCenterNode = isCenterNode;
     }
 
     /**
@@ -37,20 +30,10 @@ public class GenericTreeNode<T> {
      * @param dataHeader The header for the data. For example, if the displayData is from a database,
      *                   the header should exactly mimic the column-header that we are pulling the data from.
      */
-    public GenericTreeNode( T displayData, T dataHeader ) {
-        this();
+    public GenericTreeNode( boolean isCenterNode, T displayData, T dataHeader ) {
+        this( isCenterNode );
         setData( displayData );
         setDataHeader( dataHeader );
-    }
-
-    /**
-     * Constructor for a node which has display data and hidden data.
-     * @param displayData Data which this node should display.
-     * @param hiddenData All data which this node should keep hidden.
-     */
-    public GenericTreeNode( T displayData, T dataHeader, Map<T, T> hiddenData ) {
-        this( displayData, dataHeader );
-        setHiddenData( hiddenData );
     }
 
     /**
@@ -147,40 +130,8 @@ public class GenericTreeNode<T> {
         this.dataHeader = dataHeader;
     }
 
-    /**
-     * Adds a pre-populated map to this node's hidden data map.
-     */
-    public void addHiddenData( Map<T, T> hiddenData ) {
-        this.hiddenData.putAll( hiddenData );
-    }
-
-    /**
-     * Adds a new piece of hidden data to this node.
-     */
-    public final void addHiddenData( T key, T data ) {
-        this.hiddenData.put( key, data );
-    }
-
-    /**
-     * Checks if this node has hidden data.
-     * @return True if this node has hidden data, else false.
-     */
-    public boolean hasHiddenData() {
-        return this.hiddenData != null;
-    }
-
-    /**
-     * Returns the hidden data of this node.
-     */
-    public Map<T, T> getHiddenData() {
-        return this.hiddenData;
-    }
-
-    /**
-     * Store this node's hidden data.
-     */
-    public final void setHiddenData( Map<T, T> hiddenData ) {
-        this.hiddenData = hiddenData;
+    public boolean isCenterNode() {
+        return isCenterNode;
     }
 
     /**
@@ -196,8 +147,6 @@ public class GenericTreeNode<T> {
         ret += (getData() == null) ? "" : getData().toString();
         ret += " (DATA HEADER): ";
         ret += (getDataHeader() == null) ? "" : getDataHeader().toString();
-        ret += " (HIDDEN): ";
-        ret += (getHiddenData() == null) ? "" : getHiddenData().toString();
         ret += "]";
         return ret;
     }
@@ -213,9 +162,6 @@ public class GenericTreeNode<T> {
         if( this.dataHeader != other.dataHeader
             && (this.dataHeader == null || !this.dataHeader.equals( other.dataHeader )) )
             return false;
-        if( this.hiddenData != other.hiddenData
-            && (this.hiddenData == null || !this.hiddenData.equals( other.hiddenData )) )
-            return false;
         if( this.children != other.children
             && (this.children == null || !this.children.equals( other.children )) )
             return false;
@@ -227,7 +173,6 @@ public class GenericTreeNode<T> {
         int hash = 7;
         hash = 53 * hash + (this.displayData != null ? this.displayData.hashCode() : 0);
         hash = 53 * hash + (this.dataHeader != null ? this.dataHeader.hashCode() : 0);
-        hash = 53 * hash + (this.hiddenData != null ? this.hiddenData.hashCode() : 0);
         hash = 53 * hash + (this.children != null ? this.children.hashCode() : 0);
         return hash;
     }
