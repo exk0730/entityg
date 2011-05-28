@@ -12,6 +12,8 @@ import static edu.rit.entityg.configure.EntityGOptions.*;
 /**
  * This class is used for configuring an {@link AbstractEntityG} based on command-line arguments and/or a configuration
  * file.
+ * @see EntityGCommandLine
+ * @see EntityGIniFile
  * @date May 24, 2011
  * @author Eric Kisner
  */
