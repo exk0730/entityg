@@ -45,7 +45,7 @@ import java.util.HashMap;
  * <td>Schema name we are connecting to on <code>database</code>.</td></tr>
  * <tr><td>base_query</td><td>String</td><td>yes</td><td><code>none</code></td>
  * <td>Query that will retrieve information from the database to load into EntityG.</td></tr>
- * <tr><td>base_column</td><td>String</td><td>yes</td><td><code>none</code></td>
+ * <tr><td>base_column_name</td><td>String</td><td>yes</td><td><code>none</code></td>
  * <td>Name of the column that we want center nodes to consist of.</td></tr>
  * <tr><td>first_node_entry</td><td>String</td><td>yes</td><td><code>none</code></td>
  * <td>Initial node we want to display information for.</td></tr>
