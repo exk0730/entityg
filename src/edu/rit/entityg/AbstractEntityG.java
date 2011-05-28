@@ -65,7 +65,7 @@ public abstract class AbstractEntityG extends Display {
     /**
      * Default flag to say whether tool tips should be displayed when hovering over {@link Node}s.
      */
-    private boolean useToolTip = false;
+    private boolean useToolTip = true;
     /**
      * Default max number of nodes to display when loading new center nodes.
      */
@@ -270,7 +270,7 @@ public abstract class AbstractEntityG extends Display {
     }
 
     /**
-     * Customized ControlAdapter specifically used when the user clicks on a {@link Node}.
+     * Customized {@link ControlAdapter} specifically used when the user clicks on a {@link Node}.
      * {@link NodeControl} must be defined in this class because it needs access to the {@link Graph} object of
      * EntityG, as well as the backing {@link Visualization}.
      */
@@ -378,7 +378,7 @@ public abstract class AbstractEntityG extends Display {
             }
             return ((NodeItem) ni.getChild( 0 )).isVisible();
         }
-    }
+    } //end NodeControl adapter
 
     /**
      * Sets a new max node default.
