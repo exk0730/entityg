@@ -24,9 +24,9 @@ import java.util.Arrays;
  */
 public class DatabaseLoader implements AbstractDataSourceLoader {
 
-    private String baseQuery;
-    private String centerNodeColumnName;
-    private String[] columnNames;
+    private String baseQuery = null;
+    private String centerNodeColumnName = null;
+    private String[] columnNames = null;
     /**
      * The database connection.
      */
@@ -52,21 +52,19 @@ public class DatabaseLoader implements AbstractDataSourceLoader {
         this.columnNames = columnNames;
     }
 
-    public GenericTreeNode<String> loadAbsoluteParent( Object data ) throws BadSetupException,
-                                                                            IllegalArgumentException {
-        if( baseQuery == null || centerNodeColumnName == null ) {
-            throw new IllegalArgumentException( "You must set a base query and base column header before loading "
-                                                + "any data." );
+    public GenericTreeNode<String> loadAbsoluteParent( Object data ) throws BadSetupException {
+        if( (baseQuery == null || baseQuery.isEmpty())
+            || (centerNodeColumnName == null || centerNodeColumnName.isEmpty())
+            || (columnNames == null || columnNames.length == 0) ) {
+            throw new BadSetupException( "You must set a base query, base column header, and children column names "
+                                         + "before loading any data." );
         }
 
         try {
             ResultSet rs = conn.executeQuery( baseQuery + centerNodeColumnName + " = '" + (String) data + "'" );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, Arrays.asList( columnNames ) );
             if( results.isEmpty() ) {
-                throw new BadSetupException( "The information provided to setup the graph was invalid. "
-                                             + "You must provide specifications that allow EntityG to load data. "
-                                             + "You have provided specifications that do not give any data to "
-                                             + "EntityG." );
+                throw new BadSetupException( longErrorMessage() );
             } else if( columnNames.length > results.size() ) {
                 throw new BadSetupException( "There are null values in your database which you want displayed on the "
                                              + "first level. Please make sure the first node level has no "
@@ -127,5 +125,15 @@ public class DatabaseLoader implements AbstractDataSourceLoader {
             throw new BadSetupException( sqle.getMessage() );
         }
         return parent;
+    }
+
+    /**
+     * Returns a verbose error message to be used in {@link DatabaseLoader#loadAbsoluteParent(java.lang.Object)}.
+     */
+    private String longErrorMessage() {
+        return "The information provided to setup the graph was invalid. You must provide specifications that allow "
+               + "EntityG to load data. The specifications that may be invalid are: '" + baseQuery + "', '"
+               + centerNodeColumnName + "', or '" + Arrays.toString( columnNames ) + "'.\nPlease correct these before "
+               + "continuing.";
     }
 }

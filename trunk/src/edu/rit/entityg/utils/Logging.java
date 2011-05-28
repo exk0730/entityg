@@ -10,11 +10,13 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 /**
- * The Logging class will print all error messages to a log file.
+ * The Logging class will print all error messages to a log file. The methods in this class should only be called from
+ * {@link ExceptionUtils}, therefore, any validating should be done in that class.
  */
 public class Logging {
 
     private static final Logger logger;
+    public static final String LINE_SEP = System.getProperty( "line.separator" );
 
     static {
         logger = Logger.getLogger( "EntityG.Logger" );
@@ -28,13 +30,9 @@ public class Logging {
 
                 @Override
                 public String format( LogRecord record ) {
-                    StringBuilder buf = new StringBuilder();
-                    buf.append( "\n" );
-                    buf.append( new Date() );
-                    buf.append( " " );
-                    buf.append( formatMessage( record ) );
-                    buf.append( "\n" );
-                    return buf.toString();
+                    return LINE_SEP + new Date() + "   "
+                           + "[" + record.getLevel() + "] : "
+                           + record.getMessage() + LINE_SEP;
                 }
             } );
             logger.addHandler( fh );
@@ -52,20 +50,17 @@ public class Logging {
      * @param c The class from where the message came from.
      */
     public static void log( String message, Class c ) {
-        if( c == null ) {
-            log( message );
-        } else {
-            String toLog = "[" + c.getCanonicalName() + "]\t" + message + "\n";
-            logger.warning( toLog );
-        }
+        String toLog = "[" + c.getCanonicalName() + "]\t" + message + LINE_SEP;
+        logger.info( toLog );
+        flush();
     }
 
     /**
      * Logs a message to the log file without the classname.
-     * @param message
      */
     public static void log( String message ) {
-        logger.warning( message );
+        logger.info( message );
+        flush();
     }
 
     /**
@@ -74,6 +69,15 @@ public class Logging {
     public static void close() {
         for( Handler handler : logger.getHandlers() ) {
             handler.close();
+        }
+    }
+
+    /**
+     * Flushes all file handlers for this logger.
+     */
+    private static void flush() {
+        for( Handler handler : logger.getHandlers() ) {
+            handler.flush();
         }
     }
 }
