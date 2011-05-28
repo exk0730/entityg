@@ -4,6 +4,7 @@ import edu.rit.entityg.database.DatabaseConnection;
 import edu.rit.entityg.dataloaders.DatabaseLoader;
 import edu.rit.entityg.exceptions.BadSetupException;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
+import edu.rit.entityg.utils.ExceptionUtils;
 import prefuse.Visualization;
 
 /**
@@ -81,7 +82,8 @@ public class DatabaseEntityG extends AbstractEntityG {
             GenericTreeNode<String> ret = loader.loadAbsoluteParent( firstNodeData );
             return ret;
         } catch( BadSetupException bse ) {
-            throw new IllegalArgumentException( bse );
+            ExceptionUtils.handleException( bse );
+            throw new RuntimeException( bse );
         }
     }
 }

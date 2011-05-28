@@ -6,8 +6,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
- * ExceptionUtils is a utilities class that provides various static methods to deal with Throwables (such as
- * printing them out, or retrieving the stack trace).
+ * ExceptionUtils is a utilities class that provides various static methods to deal with {@link Exception}s or
+ * simple messages. This class will log all messages or {@link Throwable} objects using the {@link Logging} class.
  * @author Eric Kisner
  */
 public class ExceptionUtils {
@@ -22,6 +22,13 @@ public class ExceptionUtils {
         PrintStream ps = new PrintStream( baos );
         t.printStackTrace( ps );
         return baos.toString();
+    }
+
+    /**
+     * Simple method to log a message.
+     */
+    public static void handleMessage( String message ) {
+        Logging.log( message );
     }
 
     /**
@@ -51,8 +58,8 @@ public class ExceptionUtils {
      * @param c The class where this occurred.
      */
     public static void handleException( Throwable t, Class c ) {
-        String toLog = "\nException: " + t.getMessage();
-        toLog += "\n***Stack Trace***\n";
+        String toLog = Logging.LINE_SEP + "Exception: " + t.getMessage();
+        toLog += Logging.LINE_SEP + "***Stack Trace***" + Logging.LINE_SEP;
         toLog += stackTraceAsString( t );
         if( c == null ) {
             Logging.log( toLog );

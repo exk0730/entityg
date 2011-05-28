@@ -9,8 +9,6 @@
  */
 package edu.rit.entityg.database;
 
-import edu.rit.entityg.utils.ExceptionUtils;
-import edu.rit.entityg.utils.Logging;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,6 +19,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import static edu.rit.entityg.utils.ExceptionUtils.*;
 
 /**
  * Connects to a MySQL database.
@@ -65,35 +65,35 @@ public class DatabaseConnection {
     public static void setProperties( String host, String port, String database, String uid, String password ) {
         setup.clear();
         if( host.isEmpty() || host.equalsIgnoreCase( "null" ) || host.equalsIgnoreCase( "" ) ) {
-            Logging.log( "'host' has an invalid value. Using the default value: " + HOST );
+            handleMessage( "'host' has an invalid value. Using the default value: " + HOST );
             setup.setProperty( "host", HOST );
         } else {
             setup.setProperty( "host", host );
         }
 
         if( port.isEmpty() || port.equalsIgnoreCase( "null" ) || port.equalsIgnoreCase( "" ) ) {
-            Logging.log( "'port' has an invalid value. Using the default value: " + PORT );
+            handleMessage( "'port' has an invalid value. Using the default value: " + PORT );
             setup.setProperty( "port", PORT );
         } else {
             setup.setProperty( "port", port );
         }
 
         if( uid.isEmpty() || uid.equalsIgnoreCase( "null" ) || uid.equalsIgnoreCase( "" ) ) {
-            Logging.log( "'uid' has an invalid value. Using the default value: " + UID );
+            handleMessage( "'uid' has an invalid value. Using the default value: " + UID );
             setup.setProperty( "uid", UID );
         } else {
             setup.setProperty( "uid", uid );
         }
 
         if( password.equalsIgnoreCase( "null" ) ) {
-            Logging.log( "'password' has an invalid value. Using the default value: " + PASSWORD );
+            handleMessage( "'password' has an invalid value. Using the default value: " + PASSWORD );
             setup.setProperty( "password", PASSWORD );
         } else {
             setup.setProperty( "password", password );
         }
 
         if( database.isEmpty() || database.equalsIgnoreCase( "null" ) || database.equalsIgnoreCase( "" ) ) {
-            Logging.log( "'database' has an invalid value. Using the default value: " + DATABASE );
+            handleMessage( "'database' has an invalid value. Using the default value: " + DATABASE );
             setup.setProperty( "database", DATABASE );
         } else {
             setup.setProperty( "database", database );
@@ -150,11 +150,9 @@ public class DatabaseConnection {
             Class.forName( driver );
             connect = DriverManager.getConnection( url, uid, pass );
         } catch( ClassNotFoundException cnfe ) {
-            ExceptionUtils.handleException( cnfe );
-            System.exit( 1 );
+            handleException( cnfe );
         } catch( SQLException sqle ) {
-            ExceptionUtils.handleException( sqle );
-            System.exit( 1 );
+            handleException( sqle );
         }
     }
 
