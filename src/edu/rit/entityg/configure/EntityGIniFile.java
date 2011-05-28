@@ -100,13 +100,19 @@ public class EntityGIniFile {
      *                  <code>emptyArgs</code> is false, then EntityG can look in the arguments for values. If
      *                  <code>emptyArgs</code> is true, then EntityG must rely on the <code>entityg.ini</code> file
      *                  for all options.
+     * @throws InvalidIniException An exception can be thrown for the following reasons:
+     * <ul>
+     * <li>If entityg.ini file is empty, and the command-line arguments are empty;</li>
+     * <li>If <code>iniFile</code> is not a valid file, or does not end with <code>.ini</code>;</li>
+     * <li>If there was an error trying to read lines from <code>iniFile</code>;</li>
+     * or
+     * <li>If any line in <code>iniFile</code> is not of the format <code>name=value</code>.
+     * </ul>
      */
     public EntityGIniFile( String iniFile, boolean emptyArgs ) throws InvalidIniException {
         this.iniFile = validatePath( iniFile );
         this.iniPairs = loadPairsFromFile( this.iniFile );
 
-        //If the entityg.ini file is empty, and there are no command-line arguments, then EntityG cannot be properly
-        //set up, so we have to throw an exception.
         if( iniPairs.isEmpty() && emptyArgs ) {
             throw new InvalidIniException( iniFile + " does not contain any options." );
         }
@@ -150,7 +156,7 @@ public class EntityGIniFile {
         } catch( FileNotFoundException fnfe ) {
             //This should have already been checked, so we shouldn't have to worry about this.
         } catch( IOException ioe ) {
-            //Try removing the lock on the file, and then exiting the program since we can't read lines.
+            //Try removing the lock on the file.
             if( reader != null ) {
                 try {
                     reader.close();
@@ -159,6 +165,7 @@ public class EntityGIniFile {
                 }
             }
             ExceptionUtils.handleException( ioe );
+            throw new InvalidIniException( "There was an error trying to read lines from '" + file + "'." );
         }
         return ret;
     }

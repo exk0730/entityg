@@ -1,6 +1,7 @@
 package edu.rit.entityg.configure;
 
 import edu.rit.entityg.DatabaseEntityG;
+import edu.rit.entityg.dataloaders.DataSourceType;
 
 /**
  * Static variables accessible for any EntityG configuration class.
@@ -35,10 +36,33 @@ public class EntityGOptions {
     public static final String CONFIG_FILE = "config_file";
 
     /**
+     * Returns an array of options based on <code>dst</code>.
+     * @param dst The {@link DataSourceType} that we want to retrieve all options for.
+     * @return An array of options that can be set for <code>dst</code>.
+     * @throws IllegalArgumentException If <code>dst</code> is an invalid {@link DataSourceType}.
+     * @throws UnsupportedOperationException If <code>dst</code> is a valid {@link DataSourceType}, but does not have
+     *                                       an implementation yet.
+     */
+    public static String[] getOptions( DataSourceType dst ) throws IllegalArgumentException {
+        switch( dst ) {
+            case DATABASE:
+                return getDatabaseOptions();
+            case XML:
+                throw new UnsupportedOperationException( DataSourceType.XML.name() + " is not a supported data source "
+                                                         + "type currently." );
+            case CSV:
+                throw new UnsupportedOperationException( DataSourceType.CSV.name() + " is not a supported data source "
+                                                         + "type currently." );
+            default:
+                throw new IllegalArgumentException( dst.name() + " is not a valid data source type." );
+        }
+    }
+
+    /**
      * Returns an array of options that can be used in {@link DatabaseEntityG}.
      * @return Array of options that can be set for a database.
      */
-    public static String[] getDatabaseOptions() {
+    private static String[] getDatabaseOptions() {
         return new String[]{ HOST,
                              PORT,
                              USER,
