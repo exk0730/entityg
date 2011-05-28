@@ -1,9 +1,9 @@
 package edu.rit.entityg.dataloaders;
 
-import edu.rit.entityg.prefuse.view.EntityG;
+import edu.rit.entityg.AbstractEntityG;
 
 /**
- * Enum that tells {@link EntityG} what data source we are loading from.
+ * Enum that tells {@link AbstractEntityG} what data source we are loading from.
  * @author Eric Kisner
  */
 public enum DataSourceType {
