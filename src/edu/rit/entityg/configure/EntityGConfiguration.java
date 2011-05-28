@@ -94,7 +94,7 @@ public class EntityGConfiguration {
         } else if( dst.equalsIgnoreCase( "xml" ) ) {
             throw new UnsupportedOperationException( "XML is not implemented yet." );
         } else {
-            throw new IllegalStateException( dst + " is not a supported data source type." );
+            throw new IllegalStateException( "'" + dst + "' is not a supported data source type." );
         }
     }
 
