@@ -4,7 +4,6 @@ import edu.rit.entityg.database.DatabaseConnection;
 import edu.rit.entityg.dataloaders.DatabaseLoader;
 import edu.rit.entityg.exceptions.BadSetupException;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
-import java.util.Arrays;
 import prefuse.Visualization;
 
 /**
@@ -76,9 +75,8 @@ public class DatabaseEntityG extends AbstractEntityG {
 
     public GenericTreeNode<String> setupAbsoluteParent() {
         loader.setBaseQuery( baseQuery );
-        loader.setBaseColumnName( baseColumnName );
-        loader.setCenterNodeLabel( baseColumnName );
-        loader.addPattern( baseColumnName, Arrays.asList( childrenColumnNames ) );
+        loader.setCenterNodeColumnName( baseColumnName );
+        loader.setInformationNodeColumNames( childrenColumnNames );
         try {
             GenericTreeNode<String> ret = loader.loadAbsoluteParent( firstNodeData );
             return ret;

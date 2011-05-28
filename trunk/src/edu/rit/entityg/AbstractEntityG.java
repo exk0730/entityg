@@ -327,7 +327,7 @@ public abstract class AbstractEntityG extends Display {
                 } else {
                     //If they click on a "center node"
                     try {
-                        if( treeNode.getDataHeader().equalsIgnoreCase( loader.getCenterNodeLabel() ) ) {
+                        if( treeNode.isCenterNode() ) {
                             treeNode = loader.loadInformationNodes( treeNode, treeNode.getData(),
                                                                     treeNode.getDataHeader() );
                         } else {    //Else they clicked on an information node
