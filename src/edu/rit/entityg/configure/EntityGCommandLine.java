@@ -59,6 +59,9 @@ public class EntityGCommandLine {
         } catch( ParseException pe ) {
             ExceptionUtils.handleException( pe );
             usage();
+            //Since we are specifically loading EntityG as a standalone program (with arguments from the command line),
+            //we can just exit gracefully here. There's nothing we can do if we can't correctly parse the command line
+            //arguments, we have to rely on the user to fix their mistakes.
             System.exit( -1 );
         }
         return cl;
