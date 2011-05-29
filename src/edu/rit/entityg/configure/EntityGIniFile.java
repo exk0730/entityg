@@ -27,10 +27,9 @@ import java.util.HashMap;
  * <td>The type of datasource we are loading data from. Choose one of the following: [database | csv | xml]</td></tr>
  * <tr><td>default_max_nodes</td><td>integer greater than 1</td><td>no</td><td>7</td>
  * <td>Integer value to set how many child nodes to display when a user clicks a node.</td></tr>
- * <tr><td>use_tool_tip</td><td><code>true</code> or <code>false</code></td><td>no</td><td>true</td>
+ * <tr><td>use_tool_tip</td><td><code>true</code> or <code>false</code></td><td>no</td><td>false</td>
  * <td>Flag that specifies if the user wants to see a tool tip when hovering over a node</td></tr>
- * <tr><td>center_node_label</td><td>String</td><td>yes</td><td><code>none</code></td>
- * <td>Value that tells EntityG what a center node's label is.</td></tr></table>
+ * </table>
  *
  * <p/>
  * <h4>Database source</h4>

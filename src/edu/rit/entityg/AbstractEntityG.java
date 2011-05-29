@@ -62,7 +62,7 @@ public abstract class AbstractEntityG extends Display {
     /**
      * Default flag to say whether tool tips should be displayed when hovering over {@link Node}s.
      */
-    protected boolean useToolTip = true;
+    protected boolean useToolTip = false;
     /**
      * Default max number of nodes to display when loading new center nodes.
      */

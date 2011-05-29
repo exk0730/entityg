@@ -31,7 +31,6 @@ public class EntityGOptions {
      */
     public static final String DEFAULT_MAX_NODES = "default_max_nodes";
     public static final String USE_TOOL_TIP = "use_tool_tip";
-    public static final String CENTER_NODE_LABEL = "center_node_label";
     public static final String DATASOURCE_TYPE = "datasource_type";
     public static final String CONFIG_FILE = "config_file";
 
