@@ -1,6 +1,8 @@
 package edu.rit.entityg;
 
 import edu.rit.entityg.treeimpl.GenericTreeNode;
+import java.awt.event.MouseEvent;
+import prefuse.visual.VisualItem;
 
 /**
  * {@link XMLEntityG} is a class that implements any methods that are required when loading data from a XML file.
@@ -12,6 +14,10 @@ import edu.rit.entityg.treeimpl.GenericTreeNode;
 public class XMLEntityG extends AbstractEntityG {
 
     public GenericTreeNode<String> setupAbsoluteParent() {
+        throw new UnsupportedOperationException( "Not supported yet." );
+    }
+    
+    public void customItemClicked( VisualItem item, MouseEvent e ) {
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 

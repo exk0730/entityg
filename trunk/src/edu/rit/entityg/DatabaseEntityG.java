@@ -5,7 +5,11 @@ import edu.rit.entityg.dataloaders.DatabaseLoader;
 import edu.rit.entityg.exceptions.BadSetupException;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
 import edu.rit.entityg.utils.ExceptionUtils;
+import java.awt.event.MouseEvent;
+import javax.swing.SwingUtilities;
 import prefuse.Visualization;
+import prefuse.data.Node;
+import prefuse.visual.VisualItem;
 
 /**
  * {@link DatabaseEntityG} is a class that implements any methods that are required when loading data from a database.
@@ -84,6 +88,45 @@ public class DatabaseEntityG extends AbstractEntityG {
         } catch( BadSetupException bse ) {
             ExceptionUtils.handleException( bse );
             throw new RuntimeException( bse );
+        }
+    }
+
+    public void customItemClicked( VisualItem item, MouseEvent e ) {
+        if( !SwingUtilities.isLeftMouseButton( e ) ) return;
+        if( e.getClickCount() == 2 ) {//DoubleClick
+            //The backing Tuple of this visual item is actually a Node object (from g.addNode)
+            Node source = (Node) item.getSourceTuple();
+            //Get the related TreeNode of this Node
+            GenericTreeNode<String> treeNode = displayNodeToDataNodeMap.get( source );
+            /**
+             * If the Tree node has children, and they are visible nodes on the graph, we want to set those
+             * nodes to be invisible. Else, if the tree node has children and they are invisible, we want
+             * to set those nodes to be visible.
+             */
+            if( treeNode.hasChildren() ) {
+                if( hasVisibleChildren( item ) ) {
+                    setVisibilityOfAllChildren( item, false );
+                } else {
+                    setVisibilityOfAllChildren( item, true );
+                }
+            } else {
+                //If they click on a "center node"
+                try {
+                    if( treeNode.isCenterNode() ) {
+                        treeNode = loader.loadInformationNodes( treeNode, treeNode.getData(),
+                                                                treeNode.getDataHeader() );
+                    } else {    //Else they clicked on an information node
+                        treeNode = loader.loadCenterNodes( treeNode, defaultMaxNodes, treeNode.getData(),
+                                                           treeNode.getDataHeader() );
+                    }
+                } catch( BadSetupException bse ) {
+                    ExceptionUtils.handleException( bse );
+                }
+                //Retrieve all children of this TreeNode and render it on the graph.
+                if( treeNode.hasChildren() ) {
+                    renderNewNodes( source, treeNode );
+                }
+            }
         }
     }
 }

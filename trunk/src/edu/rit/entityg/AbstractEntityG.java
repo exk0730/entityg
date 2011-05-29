@@ -1,17 +1,14 @@
 package edu.rit.entityg;
 
-import edu.rit.entityg.dataloaders.AbstractDataSourceLoader;
-import edu.rit.entityg.exceptions.BadSetupException;
+import edu.rit.entityg.dataloaders.DataSourceLoader;
 import edu.rit.entityg.prefuse.view.CustomizedForceDirectedLayout;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
-import edu.rit.entityg.utils.ExceptionUtils;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import prefuse.Display;
 import prefuse.Visualization;
@@ -52,24 +49,24 @@ public abstract class AbstractEntityG extends Display {
     /**
      * The {@link Graph} object we are displaying.
      */
-    private Graph graph;
+    protected Graph graph;
     /**
      * A mapping of a {@link prefuse.data.Node} object to the {@link GenericTreeNode} that contains its 'real' data.
      */
-    private HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
+    protected HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
     /**
      * The data loader for EntityG. This is an abstract class so we can later specify exactly what data source
      * we are loading data from.
      */
-    protected AbstractDataSourceLoader loader;
+    protected DataSourceLoader loader;
     /**
      * Default flag to say whether tool tips should be displayed when hovering over {@link Node}s.
      */
-    private boolean useToolTip = true;
+    protected boolean useToolTip = true;
     /**
      * Default max number of nodes to display when loading new center nodes.
      */
-    private int defaultMaxNodes = 7;
+    protected int defaultMaxNodes = 7;
 
     /**
      * Default constructor. Initializes the visualization.
@@ -234,7 +231,7 @@ public abstract class AbstractEntityG extends Display {
      * @param treeParent The {@link GenericTreeNode} that contains the data of the children of
      *                   <code>nodeParent</code>.
      */
-    private void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
+    protected void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
         for( GenericTreeNode<String> child : treeParent.getChildren() ) {
             Node n = getVisualNodeFromTreeNode( child );
             /**
@@ -307,78 +304,43 @@ public abstract class AbstractEntityG extends Display {
 
         @Override
         public void itemClicked( VisualItem item, MouseEvent e ) {
-            if( !SwingUtilities.isLeftMouseButton( e ) ) return;
-            if( e.getClickCount() == 2 ) {//DoubleClick
-                //The backing Tuple of this visual item is actually a Node object (from g.addNode)
-                Node source = (Node) item.getSourceTuple();
-                //Get the related TreeNode of this Node
-                GenericTreeNode<String> treeNode = displayNodeToDataNodeMap.get( source );
-                /**
-                 * If the Tree node has children, and they are visible nodes on the graph, we want to set those
-                 * nodes to be invisible. Else, if the tree node has children and they are invisible, we want
-                 * to set those nodes to be visible.
-                 */
-                if( treeNode.hasChildren() ) {
-                    if( hasVisibleChildren( item ) ) {
-                        setVisibilityOfAllChildren( item, false );
-                    } else {
-                        setVisibilityOfAllChildren( item, true );
-                    }
-                } else {
-                    //If they click on a "center node"
-                    try {
-                        if( treeNode.isCenterNode() ) {
-                            treeNode = loader.loadInformationNodes( treeNode, treeNode.getData(),
-                                                                    treeNode.getDataHeader() );
-                        } else {    //Else they clicked on an information node
-                            treeNode = loader.loadCenterNodes( treeNode, defaultMaxNodes, treeNode.getData(),
-                                                               treeNode.getDataHeader() );
-                        }
-                    } catch( BadSetupException bse ) {
-                        ExceptionUtils.handleException( bse );
-                    }
-                    //Retrieve all children of this TreeNode and render it on the graph.
-                    if( treeNode.hasChildren() ) {
-                        renderNewNodes( source, treeNode );
-                    }
-                }
-            }
-        }
-
-        /**
-         * Recursively removes all children from the Graph from the Node that was clicked on.
-         * @param item The Node that was clicked on (as a VisualItem).
-         * @param visibility Flag to say if we want to hide all children, or display them. If <code>hide</code> is true,
-         *                   the method will set all children nodes and edges of <code>item</code> to invisible. If
-         *                   <code>hide</code> is false, the method will set all children nodes and edges to visible.
-         */
-        private void setVisibilityOfAllChildren( VisualItem item, boolean visibility ) {
-            NodeItem ni = (NodeItem) item;
-            for( int i = 0; i < ni.getChildCount(); i++ ) {
-                NodeItem child = (NodeItem) ni.getChild( i );
-                for( Iterator<EdgeItem> edgesIter = child.edges(); edgesIter.hasNext(); ) {
-                    EdgeItem ei = (EdgeItem) edgesIter.next();
-                    ei.setVisible( visibility );
-                }
-                child.setVisible( visibility );
-                setVisibilityOfAllChildren( child, visibility );
-            }
-        }
-
-        /**
-         * Tests the first child of this {@link VisualItem} for its visibility. We only need to check the first child,
-         * because the visibility status for each child after should be the same as the first child.
-         * @param item The {@link VisualItem} we are testing for children visibility.
-         * @return True if the children of <code>item</code> are visible, else false.
-         */
-        private boolean hasVisibleChildren( VisualItem item ) {
-            NodeItem ni = (NodeItem) item;
-            if( !ni.children().hasNext() ) {
-                return false;
-            }
-            return ((NodeItem) ni.getChild( 0 )).isVisible();
+            customItemClicked( item, e );
         }
     } //end NodeControl adapter
+
+    /**
+     * Recursively removes all children from the Graph from the Node that was clicked on.
+     * @param item The Node that was clicked on (as a VisualItem).
+     * @param visibility Flag to say if we want to hide all children, or display them. If <code>hide</code> is true,
+     *                   the method will set all children nodes and edges of <code>item</code> to invisible. If
+     *                   <code>hide</code> is false, the method will set all children nodes and edges to visible.
+     */
+    protected void setVisibilityOfAllChildren( VisualItem item, boolean visibility ) {
+        NodeItem ni = (NodeItem) item;
+        for( int i = 0; i < ni.getChildCount(); i++ ) {
+            NodeItem child = (NodeItem) ni.getChild( i );
+            for( Iterator<EdgeItem> edgesIter = child.edges(); edgesIter.hasNext(); ) {
+                EdgeItem ei = (EdgeItem) edgesIter.next();
+                ei.setVisible( visibility );
+            }
+            child.setVisible( visibility );
+            setVisibilityOfAllChildren( child, visibility );
+        }
+    }
+
+    /**
+     * Tests the first child of this {@link VisualItem} for its visibility. We only need to check the first child,
+     * because the visibility status for each child after should be the same as the first child.
+     * @param item The {@link VisualItem} we are testing for children visibility.
+     * @return True if the children of <code>item</code> are visible, else false.
+     */
+    protected boolean hasVisibleChildren( VisualItem item ) {
+        NodeItem ni = (NodeItem) item;
+        if( !ni.children().hasNext() ) {
+            return false;
+        }
+        return ((NodeItem) ni.getChild( 0 )).isVisible();
+    }
 
     /**
      * Sets a new max node default.
@@ -405,6 +367,14 @@ public abstract class AbstractEntityG extends Display {
      *         This parent node will be rendered on the graph.
      */
     public abstract GenericTreeNode<String> setupAbsoluteParent();
+
+    /**
+     * User-click handling method. This should be implemented in each subclass of {@link AbstractEntityG} because each
+     * data sources require different information to be sent to an implementation of {@link DataSourceLoader}.
+     * @param item The {@link VisualItem} that was clicked.
+     * @param e The {@link MouseEvent} of the click.
+     */
+    public abstract void customItemClicked( VisualItem item, MouseEvent e );
 
     /**
      * =============================================================================================================

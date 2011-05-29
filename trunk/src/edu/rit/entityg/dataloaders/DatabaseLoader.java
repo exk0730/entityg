@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Implements {@link AbstractDataSourceLoader} for a {@link DataSourceType#DATABASE} data source. The following
+ * Implements {@link DataSourceLoader} for a {@link DataSourceType#DATABASE} data source. The following
  * represents what information is needed prior to loading data into EntityG from a database:
  * <ul>
  * <li>A single SQL query. This query should allow {@link DatabaseLoader} to retrieve any needed information for both
@@ -22,7 +22,7 @@ import java.util.Arrays;
  * @date May 6, 2011
  * @author Eric Kisner
  */
-public class DatabaseLoader implements AbstractDataSourceLoader {
+public class DatabaseLoader implements DataSourceLoader {
 
     private String baseQuery = null;
     private String centerNodeColumnName = null;
