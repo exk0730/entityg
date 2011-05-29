@@ -47,10 +47,11 @@ import java.util.HashMap;
  * <tr><td>base_column_name</td><td>String</td><td>yes</td><td><code>none</code></td>
  * <td>Name of the column that we want center nodes to consist of.</td></tr>
  * <tr><td>first_node_entry</td><td>String</td><td>yes</td><td><code>none</code></td>
- * <td>Initial node we want to display information for.</td></tr>
+ * <td>Initial node data we want to display information for.</td></tr>
  * <tr><td>children_columns</td><td>Delimited list of Strings</td><td>yes</td><td><code>none</code></td>
  * <td>All column names of the information that will be returned from <code>base_query</code>. The information nodes
- * will consist of the data of these columns.</td></tr>
+ * will consist of the data of these columns. This option must be specified as a String with each column delimited
+ * by a comma (<code>','</code>).</td></tr>
  * </table>
  *
  * <p/>
