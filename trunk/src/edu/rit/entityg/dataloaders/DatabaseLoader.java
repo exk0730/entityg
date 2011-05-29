@@ -60,8 +60,9 @@ public class DatabaseLoader implements DataSourceLoader {
                                          + "before loading any data." );
         }
 
+        String sql = baseQuery + " " + centerNodeColumnName + " = '" + (String) data + "'";
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + centerNodeColumnName + " = '" + (String) data + "'" );
+            ResultSet rs = conn.executeQuery( sql );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, Arrays.asList( columnNames ) );
             if( results.isEmpty() ) {
                 throw new BadSetupException( longErrorMessage() );
@@ -70,14 +71,16 @@ public class DatabaseLoader implements DataSourceLoader {
                                              + "first level. Please make sure the first node level has no "
                                              + "null values." );
             }
-            GenericTreeNode<String> rootParent = new GenericTreeNode<String>( true, (String) data, centerNodeColumnName );
+            GenericTreeNode<String> rootParent = new GenericTreeNode<String>( true, (String) data,
+                                                                              centerNodeColumnName );
             //Add the children data to the root parent
             for( int i = 0; i < results.size(); i++ ) {
                 rootParent.addChild( new GenericTreeNode<String>( false, results.get( i ), columnNames[i] ) );
             }
             return rootParent;
         } catch( SQLException sqle ) {
-            throw new BadSetupException( sqle.getMessage() );
+            throw new BadSetupException( "There was an error trying to create a SQL Query from " + sql + " with "
+                                         + Arrays.toString( columnNames ) + " as columns to retreive data from." );
         }
     }
 
@@ -86,7 +89,7 @@ public class DatabaseLoader implements DataSourceLoader {
         String data = (String) obj[0];
         String columnHeader = (String) obj[1];
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
+            ResultSet rs = conn.executeQuery( baseQuery + " " +  columnHeader + " = '" + data + "'" );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, Arrays.asList( columnNames ) );
             if( columnNames.length > results.size() ) {
                 throw new BadSetupException( "There are null values in your database which you want displayed. "
@@ -109,7 +112,7 @@ public class DatabaseLoader implements DataSourceLoader {
         String data = (String) obj[0];
         String columnHeader = (String) obj[1];
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + columnHeader + " = '" + data + "'" );
+            ResultSet rs = conn.executeQuery( baseQuery + " " + columnHeader + " = '" + data + "'" );
             ArrayList<ArrayList<String>> results = conn.getData( rs, centerNodeColumnName );
             if( results.isEmpty() ) {
                 return parent;
