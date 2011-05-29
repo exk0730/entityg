@@ -119,8 +119,13 @@ public class EntityGConfiguration {
         }
 
         String defMaxNodeStr = getValue( DEFAULT_MAX_NODES );
-        if( !defMaxNodeStr.isEmpty() ) {
-            entityG.set_default_max_nodes( Integer.parseInt( defMaxNodeStr ) );
+        if( defMaxNodeStr != null ) {
+            try {
+                entityG.set_default_max_nodes( Integer.parseInt( defMaxNodeStr ) );
+            } catch( Exception e ) {
+                ExceptionUtils.handleMessage( "The option for " + DEFAULT_MAX_NODES + " was not an integer value. "
+                                              + "Using the default value." );
+            }
         }
 
         String useToolTipStr = getValue( USE_TOOL_TIP );
@@ -164,14 +169,13 @@ public class EntityGConfiguration {
         if( !emptyArgs ) {
             if( entitygCL.optionExists( optionName ) ) {
                 return entitygCL.getOptionValue( optionName );
-            } else if( entitygINI.optionExists( optionName ) ) {
-                return entitygINI.getOptionValue( optionName );
-            }
-        } else {
-            if( entitygINI.optionExists( optionName ) ) {
-                return entitygINI.getOptionValue( optionName );
             }
         }
+
+        if( entitygINI.optionExists( optionName ) ) {
+            return entitygINI.getOptionValue( optionName );
+        }
+
         return "";
     }
 }
