@@ -124,7 +124,7 @@ public class EntityGConfiguration {
         }
 
         String useToolTipStr = getValue( USE_TOOL_TIP );
-        if( !useToolTipStr.isEmpty() ) {
+        if( useToolTipStr != null ) {
             entityG.set_use_tool_tip( Boolean.parseBoolean( useToolTipStr ) );
         }
     }
