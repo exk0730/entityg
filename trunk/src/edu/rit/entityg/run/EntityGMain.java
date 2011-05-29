@@ -1,6 +1,7 @@
 package edu.rit.entityg.run;
 
 import edu.rit.entityg.configure.EntityGConfiguration;
+import edu.rit.entityg.utils.ExceptionUtils;
 
 /**
  * @date May 24, 2011
@@ -14,8 +15,7 @@ public class EntityGMain {
             EntityGConfiguration main = new EntityGConfiguration( args );
             main.startEntityG();
         } catch( Exception e ) {
-            System.err.println( e );
-            e.printStackTrace();
+            ExceptionUtils.handleException( e );
         }
 
         //Test callable EntityG - uses entityg config file only
