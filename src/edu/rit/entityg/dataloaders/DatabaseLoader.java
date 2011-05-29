@@ -41,7 +41,7 @@ public class DatabaseLoader implements DataSourceLoader {
     }
 
     public void setBaseQuery( String baseQuery ) {
-        this.baseQuery = baseQuery;
+        this.baseQuery = baseQuery.trim() + " ";
     }
 
     public void setCenterNodeColumnName( String centerNodeColumnName ) {
@@ -60,7 +60,7 @@ public class DatabaseLoader implements DataSourceLoader {
                                          + "before loading any data." );
         }
 
-        String sql = baseQuery + " " + centerNodeColumnName + " = '" + (String) data + "'";
+        String sql = baseQuery + centerNodeColumnName + " = '" + (String) data + "'";
         try {
             ResultSet rs = conn.executeQuery( sql );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, Arrays.asList( columnNames ) );
@@ -88,8 +88,9 @@ public class DatabaseLoader implements DataSourceLoader {
                                                          Object... obj ) throws BadSetupException {
         String data = (String) obj[0];
         String columnHeader = (String) obj[1];
+        String sql = baseQuery + columnHeader + " = '" + data + "'";
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + " " +  columnHeader + " = '" + data + "'" );
+            ResultSet rs = conn.executeQuery( sql );
             ArrayList<String> results = conn.getSingleRowFromColumnHeaders( rs, Arrays.asList( columnNames ) );
             if( columnNames.length > results.size() ) {
                 throw new BadSetupException( "There are null values in your database which you want displayed. "
@@ -111,8 +112,9 @@ public class DatabaseLoader implements DataSourceLoader {
                                                     Object... obj ) throws BadSetupException {
         String data = (String) obj[0];
         String columnHeader = (String) obj[1];
+        String sql = baseQuery + columnHeader + " = '" + data + "'";
         try {
-            ResultSet rs = conn.executeQuery( baseQuery + " " + columnHeader + " = '" + data + "'" );
+            ResultSet rs = conn.executeQuery( sql );
             ArrayList<ArrayList<String>> results = conn.getData( rs, centerNodeColumnName );
             if( results.isEmpty() ) {
                 return parent;
