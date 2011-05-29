@@ -7,7 +7,7 @@ import edu.rit.entityg.treeimpl.GenericTreeNode;
  * This is the interface for all data source loaders to implement.
  * @author Eric Kisner
  */
-public interface AbstractDataSourceLoader {
+public interface DataSourceLoader {
 
     /**
      * Sets up the base node (and its children) of EntityG. This should load all information from the data source into
