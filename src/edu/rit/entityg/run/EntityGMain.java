@@ -1,9 +1,9 @@
 package edu.rit.entityg.run;
 
 import edu.rit.entityg.configure.EntityGConfiguration;
-import edu.rit.entityg.utils.ExceptionUtils;
 
 /**
+ * Simple Main file to test run configurations of EntityG.
  * @date May 24, 2011
  * @author Eric Kisner
  */
@@ -15,7 +15,7 @@ public class EntityGMain {
             EntityGConfiguration main = new EntityGConfiguration( args );
             main.startEntityG();
         } catch( Exception e ) {
-            ExceptionUtils.handleException( e );
+            System.err.println( e.getMessage() );
         }
 
         //Test callable EntityG - uses entityg config file only
