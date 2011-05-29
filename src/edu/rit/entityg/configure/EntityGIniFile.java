@@ -1,6 +1,5 @@
 package edu.rit.entityg.configure;
 
-import edu.rit.entityg.dataloaders.DataSourceType;
 import edu.rit.entityg.exceptions.InvalidIniException;
 import edu.rit.entityg.utils.ExceptionUtils;
 import java.io.BufferedReader;
@@ -14,52 +13,6 @@ import java.util.HashMap;
  * {@link EntityGIniFile} is a class specifically used for parsing the <code>entityg.ini</code> file.
  * EntityG can be run as a standalone application, as well as using it within another Java application. This class
  * should be used in both instances when reading from the configuration file which can set up EntityG.
- * <p/>What follows is the possible name-value pairs that can exist in the .ini file or command-line arguments.
- * <br/>The first table lists the default name-value pairs for EntityG.
- * <br/>The second table lists name-value pairs that can be specified for a {@link DataSourceType#DATABASE} source type.
- * <br/>The third table lists name-value pairs that can be specified for a {@link DataSourceType#CSV} source type.
- * <br/>The fourth table lists name-value pairs that can be specified for a {@link DataSourceType#XML} source type.
- * <p/>
- * <h4>Defaults</h4>
- * <table border="1"> <tr><th>name</th><th>value type</th><th>required</th><th>default</th><th>description</th></tr>
- * <p/>
- * <tr><td>datasource_type</td><td>String</td><td>yes</td><td><code>none</code></td>
- * <td>The type of datasource we are loading data from. Choose one of the following: [database | csv | xml]</td></tr>
- * <tr><td>default_max_nodes</td><td>integer greater than 1</td><td>no</td><td>7</td>
- * <td>Integer value to set how many child nodes to display when a user clicks a node.</td></tr>
- * <tr><td>use_tool_tip</td><td><code>true</code> or <code>false</code></td><td>no</td><td>false</td>
- * <td>Flag that specifies if the user wants to see a tool tip when hovering over a node</td></tr>
- * </table>
- *
- * <p/>
- * <h4>Database source</h4>
- * <table border="1"> <tr><th>name</th><th>value type</th><th>required</th><th>default</th><th>description</th></tr>
- * <p/>
- * <tr><td>host</td><td>String</td><td>no</td><td>localhost</td><td>Host of the database.</td></tr>
- * <tr><td>port</td><td>integer</td><td>no</td><td>3306</td><td>Port of the database.</td></tr>
- * <tr><td>user</td><td>String</td><td>no</td><td>root</td><td>Username to get full access to the database.</td></tr>
- * <tr><td>password</td><td>String</td><td>no</td><td><code>none</code></td>
- * <td>Password for <code>user</code> to access the database.</td></tr>
- * <tr><td>database_name</td><td>String</td><td>yes</td><td><code>none</code></td>
- * <td>Schema name we are connecting to on <code>database</code>.</td></tr>
- * <tr><td>base_query</td><td>String</td><td>yes</td><td><code>none</code></td>
- * <td>Query that will retrieve information from the database to load into EntityG.</td></tr>
- * <tr><td>base_column_name</td><td>String</td><td>yes</td><td><code>none</code></td>
- * <td>Name of the column that we want center nodes to consist of.</td></tr>
- * <tr><td>first_node_entry</td><td>String</td><td>yes</td><td><code>none</code></td>
- * <td>Initial node data we want to display information for.</td></tr>
- * <tr><td>children_columns</td><td>Delimited list of Strings</td><td>yes</td><td><code>none</code></td>
- * <td>All column names of the information that will be returned from <code>base_query</code>. The information nodes
- * will consist of the data of these columns. This option must be specified as a String with each column delimited
- * by a comma (<code>','</code>).</td></tr>
- * </table>
- *
- * <p/>
- * <h4>CSV source</h4>
- * <table border="1"> <tr><th>name</th><th>value type</th><th>required</th><th>default</th><th>description</th></tr>
- * <p/>
- * <tr><td>file</td><td>String</td><td>yes</td><td><code>none</code></td><td>Path to the CSV file.</td></tr>
- * </table>
  * @date May 19, 2011
  * @author Eric Kisner
  */
@@ -88,6 +41,14 @@ public class EntityGIniFile {
      *                  <code>emptyArgs</code> is false, then EntityG can look in the arguments for values. If
      *                  <code>emptyArgs</code> is true, then EntityG must rely on the <code>entityg.ini</code> file
      *                  for all options.
+     * @throws InvalidIniException An exception can be thrown for the following reasons:
+     * <ul>
+     * <li>If entityg.ini file is empty, and the command-line arguments are empty;</li>
+     * <li>If <code>iniFile</code> is not a valid file, or does not end with <code>.ini</code>;</li>
+     * <li>If there was an error trying to read lines from <code>iniFile</code>;</li>
+     * or
+     * <li>If any line in <code>iniFile</code> is not of the format <code>name=value</code>.
+     * </ul>
      */
     public EntityGIniFile( boolean emptyArgs ) throws InvalidIniException {
         this( ENTITY_G_INI, emptyArgs );

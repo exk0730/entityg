@@ -12,6 +12,55 @@ import static edu.rit.entityg.configure.EntityGOptions.*;
 /**
  * This class is used for configuring an {@link AbstractEntityG} based on command-line arguments and/or a configuration
  * file.
+ *
+ * <p/>What follows is the possible name-value pairs that can exist in the .ini file or command-line arguments.
+ * <br/>The first table lists the default name-value pairs for EntityG.
+ * <br/>The second table lists name-value pairs that can be specified for a {@link DataSourceType#DATABASE} source type.
+ * <br/>The third table lists name-value pairs that can be specified for a {@link DataSourceType#CSV} source type.
+ * <br/>The fourth table lists name-value pairs that can be specified for a {@link DataSourceType#XML} source type.
+ * <p/>
+ * <h4>Defaults</h4>
+ * <table border="1"> <tr><th>name</th><th>value type</th><th>required</th><th>default</th><th>description</th></tr>
+ * <p/>
+ * <tr><td>datasource_type</td><td>String</td><td>yes</td><td><code>none</code></td>
+ * <td>The type of datasource we are loading data from. Choose one of the following: [database | csv | xml]</td></tr>
+ * <tr><td>default_max_nodes</td><td>integer greater than 1</td><td>no</td><td>7</td>
+ * <td>Integer value to set how many child nodes to display when a user clicks a node.</td></tr>
+ * <tr><td>use_tool_tip</td><td><code>true</code> or <code>false</code></td><td>no</td><td>false</td>
+ * <td>Flag that specifies if the user wants to see a tool tip when hovering over a node</td></tr>
+ * <tr><td>config_file</td><td>String</td><td>no</td><td><code>entityg.ini</code></td>
+ * <td>Path to the configuration (.ini) file.</td></tr>
+ * </table>
+ *
+ * <p/>
+ * <h4>Database source</h4>
+ * <table border="1"> <tr><th>name</th><th>value type</th><th>required</th><th>default</th><th>description</th></tr>
+ * <p/>
+ * <tr><td>host</td><td>String</td><td>no</td><td>localhost</td><td>Host of the database.</td></tr>
+ * <tr><td>port</td><td>integer</td><td>no</td><td>3306</td><td>Port of the database.</td></tr>
+ * <tr><td>user</td><td>String</td><td>no</td><td>root</td><td>Username to get full access to the database.</td></tr>
+ * <tr><td>password</td><td>String</td><td>no</td><td><code>none</code></td>
+ * <td>Password for <code>user</code> to access the database.</td></tr>
+ * <tr><td>database_name</td><td>String</td><td>yes</td><td><code>none</code></td>
+ * <td>Schema name we are connecting to on <code>database</code>.</td></tr>
+ * <tr><td>base_query</td><td>String</td><td>yes</td><td><code>none</code></td>
+ * <td>Query that will retrieve information from the database to load into EntityG.</td></tr>
+ * <tr><td>base_column_name</td><td>String</td><td>yes</td><td><code>none</code></td>
+ * <td>Name of the column that we want center nodes to consist of.</td></tr>
+ * <tr><td>first_node_entry</td><td>String</td><td>yes</td><td><code>none</code></td>
+ * <td>Initial node data we want to display information for.</td></tr>
+ * <tr><td>children_columns</td><td>Delimited list of Strings</td><td>yes</td><td><code>none</code></td>
+ * <td>All column names of the information that will be returned from <code>base_query</code>. The information nodes
+ * will consist of the data of these columns. This option must be specified as a String with each column delimited
+ * by a comma (<code>','</code>).</td></tr>
+ * </table>
+ *
+ * <p/>
+ * <h4>CSV source</h4>
+ * <table border="1"> <tr><th>name</th><th>value type</th><th>required</th><th>default</th><th>description</th></tr>
+ * <p/>
+ * <tr><td>file</td><td>String</td><td>yes</td><td><code>none</code></td><td>Path to the CSV file.</td></tr>
+ * </table>
  * @see EntityGCommandLine
  * @see EntityGIniFile
  * @date May 24, 2011
@@ -27,7 +76,14 @@ public class EntityGConfiguration {
     /**
      * Default constructor. Should be used when we want to run EntityG within an application, and/or with the default
      * configuration file.
-     * @throws InvalidIniException
+     * @throws InvalidIniException An exception can be thrown for the following reasons:
+     * <ul>
+     * <li>If entityg.ini file is empty, and the command-line arguments are empty;</li>
+     * <li>If <code>iniFile</code> is not a valid file, or does not end with <code>.ini</code>;</li>
+     * <li>If there was an error trying to read lines from <code>iniFile</code>;</li>
+     * or
+     * <li>If any line in <code>iniFile</code> is not of the format <code>name=value</code>.
+     * </ul>
      */
     public EntityGConfiguration() throws InvalidIniException {
         configAll( new String[]{}, null );
@@ -37,7 +93,14 @@ public class EntityGConfiguration {
      * Standalone EntityG constructor. Should be used when we have arguments to pass into EntityG. This constructor
      * will also check to see if a non-default configuration file has been specified within the arguments.
      * @param args The command-line arguments passed into a main method.
-     * @throws InvalidIniException
+     * @throws InvalidIniException An exception can be thrown for the following reasons:
+     * <ul>
+     * <li>If entityg.ini file is empty, and the command-line arguments are empty;</li>
+     * <li>If <code>iniFile</code> is not a valid file, or does not end with <code>.ini</code>;</li>
+     * <li>If there was an error trying to read lines from <code>iniFile</code>;</li>
+     * or
+     * <li>If any line in <code>iniFile</code> is not of the format <code>name=value</code>.
+     * </ul>
      */
     public EntityGConfiguration( String[] args ) throws InvalidIniException {
         configAll( args, null );
@@ -47,7 +110,14 @@ public class EntityGConfiguration {
      * Constructor that should be used when we are specifying a different configuration file. This constructor relies
      * on the configuration file to set up EntityG.
      * @param iniFile The <code>entityg.ini</code> file's location.
-     * @throws InvalidIniException
+     * @throws InvalidIniException An exception can be thrown for the following reasons:
+     * <ul>
+     * <li>If entityg.ini file is empty, and the command-line arguments are empty;</li>
+     * <li>If <code>iniFile</code> is not a valid file, or does not end with <code>.ini</code>;</li>
+     * <li>If there was an error trying to read lines from <code>iniFile</code>;</li>
+     * or
+     * <li>If any line in <code>iniFile</code> is not of the format <code>name=value</code>.
+     * </ul>
      */
     public EntityGConfiguration( String iniFile ) throws InvalidIniException {
         configAll( new String[]{}, iniFile );
@@ -64,6 +134,14 @@ public class EntityGConfiguration {
      * Sets up any required configuration objects based on the command-line arguments or a configuration file.
      * @param args The command-line arguments passed into a main method.
      * @param filePath The path to the configuration file.
+     * @throws InvalidIniException An exception can be thrown for the following reasons:
+     * <ul>
+     * <li>If entityg.ini file is empty, and the command-line arguments are empty;</li>
+     * <li>If <code>iniFile</code> is not a valid file, or does not end with <code>.ini</code>;</li>
+     * <li>If there was an error trying to read lines from <code>iniFile</code>;</li>
+     * or
+     * <li>If any line in <code>iniFile</code> is not of the format <code>name=value</code>.
+     * </ul>
      */
     private void configAll( String[] args, String filePath ) throws InvalidIniException {
         emptyArgs = !(args.length > 0);
