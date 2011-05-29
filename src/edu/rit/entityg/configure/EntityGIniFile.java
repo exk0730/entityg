@@ -180,8 +180,8 @@ public class EntityGIniFile {
     private void validateLine( String line ) throws InvalidIniException {
         final String errorMessage = "'" + line + "' has an invalid format.";
         if( !line.contains( NAME_VALUE_DELIM ) )
-            throw new InvalidIniException( errorMessage + " A .ini file requires " + NAME_VALUE_DELIM
-                                           + " to separate names and values." );
+            throw new InvalidIniException( errorMessage + " A .ini file requires '" + NAME_VALUE_DELIM
+                                           + "' to separate names and values." );
         String[] split = line.split( NAME_VALUE_DELIM );
         if( split.length != 2 )
             throw new InvalidIniException( errorMessage + " A line in this .ini file should only consist of "
