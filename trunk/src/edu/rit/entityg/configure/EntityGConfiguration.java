@@ -206,9 +206,18 @@ public class EntityGConfiguration {
             }
         }
 
-        String useToolTipStr = getValue( USE_TOOL_TIP );
-        if( useToolTipStr != null ) {
-            entityG.set_use_tool_tip( Boolean.parseBoolean( useToolTipStr ) );
+        /**
+         * We need to determine USE_TOOL_TIP's option because the command line only requires that the flag is set, while
+         * the .ini file requires that the option is set to "true".
+         */
+        if( !emptyArgs ) {
+            if( entitygCL.optionExists( USE_TOOL_TIP ) ) {
+                entityG.set_use_tool_tip( true );
+            }
+        } else {
+            if( entitygINI.optionExists( USE_TOOL_TIP ) ) {
+                entityG.set_use_tool_tip( Boolean.parseBoolean( entitygINI.getOptionValue( USE_TOOL_TIP ) ) );
+            }
         }
     }
 

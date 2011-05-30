@@ -137,7 +137,7 @@ public abstract class AbstractEntityG extends Display {
         Node root = graph.addNode();
         root.setString( LABEL.getLabel(), absoluteParent.getData() );
         displayNodeToDataNodeMap.put( root, absoluteParent );
-        renderNewNodes( root, absoluteParent );
+        renderNewNodes( root, absoluteParent, true );
     }
 
     /**
@@ -230,8 +230,9 @@ public abstract class AbstractEntityG extends Display {
      * @param nodeParent The {@link Node} that was clicked on.
      * @param treeParent The {@link GenericTreeNode} that contains the data of the children of
      *                   <code>nodeParent</code>.
+     * @param isFirstLoad Flag to say whether this rendering of nodes is of the absolute parent or not.
      */
-    protected void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
+    protected void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent, boolean isFirstLoad ) {
         for( GenericTreeNode<String> child : treeParent.getChildren() ) {
             Node n = getVisualNodeFromTreeNode( child );
             /**
@@ -239,7 +240,7 @@ public abstract class AbstractEntityG extends Display {
              * to <code>nodeParent</code>. However, if an {@link Edge} exists between <code>child</code> and
              * <code>nodeParent</code>, we don't want to create a duplicate {@link Edge}.
              */
-            if( n != null ) {
+            if( n != null && !isFirstLoad ) {
                 if( !checkForExistingEdge( nodeParent, n ) ) {
                     graph.addEdge( nodeParent, n );
                 }

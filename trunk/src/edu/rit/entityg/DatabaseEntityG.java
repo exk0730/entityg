@@ -124,7 +124,7 @@ public class DatabaseEntityG extends AbstractEntityG {
                 }
                 //Retrieve all children of this TreeNode and render it on the graph.
                 if( treeNode.hasChildren() ) {
-                    renderNewNodes( source, treeNode );
+                    renderNewNodes( source, treeNode, false );
                 }
             }
         }
