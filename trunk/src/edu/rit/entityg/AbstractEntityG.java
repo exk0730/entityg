@@ -137,7 +137,7 @@ public abstract class AbstractEntityG extends Display {
         Node root = graph.addNode();
         root.setString( LABEL.getLabel(), absoluteParent.getData() );
         displayNodeToDataNodeMap.put( root, absoluteParent );
-        renderNewNodes( root, absoluteParent, true );
+        renderNewNodes( root, absoluteParent );
     }
 
     /**
@@ -230,9 +230,8 @@ public abstract class AbstractEntityG extends Display {
      * @param nodeParent The {@link Node} that was clicked on.
      * @param treeParent The {@link GenericTreeNode} that contains the data of the children of
      *                   <code>nodeParent</code>.
-     * @param isFirstLoad Flag to say whether this rendering of nodes is of the absolute parent or not.
      */
-    protected void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent, boolean isFirstLoad ) {
+    protected void renderNewNodes( Node nodeParent, GenericTreeNode<String> treeParent ) {
         for( GenericTreeNode<String> child : treeParent.getChildren() ) {
             Node n = getVisualNodeFromTreeNode( child );
             /**
@@ -240,8 +239,8 @@ public abstract class AbstractEntityG extends Display {
              * to <code>nodeParent</code>. However, if an {@link Edge} exists between <code>child</code> and
              * <code>nodeParent</code>, we don't want to create a duplicate {@link Edge}.
              */
-            if( n != null && !isFirstLoad ) {
-                if( !checkForExistingEdge( nodeParent, n ) ) {
+            if( n != null ) {
+                if( !hasExistingEdge( nodeParent, n ) ) {
                     graph.addEdge( nodeParent, n );
                 }
                 continue;
@@ -260,7 +259,7 @@ public abstract class AbstractEntityG extends Display {
      * @param target The target {@link Node}.
      * @return True if there exists an {@link Edge} between <code>source</code> and <code>target</code>.
      */
-    private boolean checkForExistingEdge( Node source, Node target ) {
+    private boolean hasExistingEdge( Node source, Node target ) {
         if( graph.getEdge( source, target ) != null || graph.getEdge( target, source ) != null ) {
             return true;
         }
