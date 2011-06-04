@@ -167,8 +167,8 @@ public class EntityGConfiguration {
 
         if( dst.equalsIgnoreCase( "database" ) ) {
             entityG = new DatabaseEntityG();
-            runMethodsForDataSource( DataSourceType.DATABASE );
-            entityG.connectToDatabase();
+            runMethodsForDataSource( DataSourceType.DATABASE, entityG );
+            entityG.connectToDataSource();
         } else if( dst.equalsIgnoreCase( "csv" ) ) {
             throw new UnsupportedOperationException( "CSV is not implemented yet." );
         } else if( dst.equalsIgnoreCase( "xml" ) ) {
@@ -183,12 +183,15 @@ public class EntityGConfiguration {
      * be set based on <code>dst</code>, then run any setter methods based on the names of those options using
      * reflection.
      * @param dst The {@link DataSourceType} that we are setting fields for.
+     * @param obj The {@link AbstractEntityG} instance we are using based on <code>dst</code>.
      */
-    private void runMethodsForDataSource( DataSourceType dst ) {
+    private void runMethodsForDataSource( DataSourceType dst, AbstractEntityG obj ) {
         try {
             for( String option : getOptions( dst ) ) {
-                Method m = getMethodFromOption( option );
-                m.invoke( entityG, getValue( option ) );
+                Method m = getMethodFromOption( option, obj );
+                if( m != null ) {
+                    m.invoke( entityG, getValue( option ) );
+                }
             }
         } catch( IllegalArgumentException iae ) {
             ExceptionUtils.handleException( iae );
@@ -226,12 +229,13 @@ public class EntityGConfiguration {
      * <code>set_</code> and then end with <code>optionName</code>. The methods will be retrieved from the class
      * {@link AbstractEntityG}.
      * @param optionName The name of the option we are running a setter method for.
+     * @param obj The {@link AbstractEntityG} instance we want to get our {@link Method}s from.
      * @return The {@link Method} whose name is equal to <code>set_[optionName]</code> or null, if <code>optionName
      *         </code> could not be found.
      */
-    private Method getMethodFromOption( String optionName ) {
+    private Method getMethodFromOption( String optionName, AbstractEntityG obj ) {
         final String prefix = "set_";
-        for( Method m : AbstractEntityG.class.getMethods() ) {
+        for( Method m : obj.getClass().getMethods() ) {
             if( (prefix + optionName).equalsIgnoreCase( m.getName() ) ) {
                 return m;
             }
