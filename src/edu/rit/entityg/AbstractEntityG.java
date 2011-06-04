@@ -1,6 +1,7 @@
 package edu.rit.entityg;
 
 import edu.rit.entityg.dataloaders.DataSourceLoader;
+import edu.rit.entityg.dataloaders.DataSourceType;
 import edu.rit.entityg.prefuse.view.CustomizedForceDirectedLayout;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
 import java.awt.event.MouseEvent;
@@ -377,68 +378,7 @@ public abstract class AbstractEntityG extends Display {
     public abstract void customItemClicked( VisualItem item, MouseEvent e );
 
     /**
-     * =============================================================================================================
-     * The next few methods represent any required methods that should be overriden in {@link DatabaseEntityG}.
-     * These methods are used by the EntityG run classes to set up any required parameters for EntityG.
-     * =============================================================================================================
+     * Connect to the data source. Available data sources are defined in {@link DataSourceType}.
      */
-    /**
-     * Sets the children columns we are retrieving data from.
-     * @param childrenColumnNames A String with children columns, each delimited by <code>','</code>.
-     */
-    public abstract void set_children_columns( String childrenColumnNames );
-
-    /**
-     * Sets the host of the database we want to connect to.
-     * @param optionValue The host name.
-     */
-    public abstract void set_host( String optionValue );
-
-    /**
-     * Sets the port of the database we want to connect to.
-     * @param optionValue The port.
-     */
-    public abstract void set_port( String optionValue );
-
-    /**
-     * Sets the user who can access the database we want to connect to.
-     * @param optionValue The username.
-     */
-    public abstract void set_user( String optionValue );
-
-    /**
-     * Sets the password for the user.
-     * @param optionValue The password.
-     */
-    public abstract void set_password( String optionValue );
-
-    /**
-     * Sets the schema name we are pulling data from.
-     * @param optionValue The schema name.
-     */
-    public abstract void set_database_name( String optionValue );
-
-    /**
-     * Sets the base query which will allow {@link AbstractEntityG} to populate information nodes with result sets of
-     * this query.
-     * @param optionValue The base query.
-     */
-    public abstract void set_base_query( String optionValue );
-
-    /**
-     * Sets the base column name for center nodes.
-     * @param optionValue The base column name.
-     */
-    public abstract void set_base_column_name( String optionValue );
-
-    /**
-     * Sets the first center node's data. This will be the starting point to the graph.
-     * @param optionValue The data for the first node.
-     */
-    public abstract void set_first_node_entry( String optionValue );
-
-    /**
-     * Try to connect to the database using the options.
-     */
-    public abstract void connectToDatabase();
+    public abstract void connectToDataSource();
 }

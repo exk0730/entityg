@@ -73,11 +73,13 @@ public class DatabaseEntityG extends AbstractEntityG {
         this.childrenColumnNames = childrenColumnNames.split( "," );
     }
 
-    public void connectToDatabase() {
+    @Override
+    public void connectToDataSource() {
         DatabaseConnection.setProperties( host, port, databaseName, uid, password );
         loader = new DatabaseLoader( DatabaseConnection.instance() );
     }
 
+    @Override
     public GenericTreeNode<String> setupAbsoluteParent() {
         loader.setBaseQuery( baseQuery );
         loader.setCenterNodeColumnName( baseColumnName );
@@ -91,6 +93,7 @@ public class DatabaseEntityG extends AbstractEntityG {
         }
     }
 
+    @Override
     public void customItemClicked( VisualItem item, MouseEvent e ) {
         if( !SwingUtilities.isLeftMouseButton( e ) ) return;
         if( e.getClickCount() == 2 ) {//DoubleClick
