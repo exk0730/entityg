@@ -29,6 +29,10 @@ public class DatabaseEntityG extends AbstractEntityG {
     private String baseColumnName;
     private String firstNodeData;
     private String[] childrenColumnNames;
+    /**
+     * The data loader for EntityG.
+     */
+    private DatabaseLoader loader;
 
     /**
      * Default constructor. Simply calls {@link AbstractEntityG#AbstractEntityG()} to setup the {@link Visualization}.
@@ -77,6 +81,7 @@ public class DatabaseEntityG extends AbstractEntityG {
     public void connectToDataSource() {
         DatabaseConnection.setProperties( host, port, databaseName, uid, password );
         loader = new DatabaseLoader( DatabaseConnection.instance() );
+        super.registerLoader( loader );
     }
 
     @Override

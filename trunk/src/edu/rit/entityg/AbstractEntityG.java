@@ -4,6 +4,7 @@ import edu.rit.entityg.dataloaders.DataSourceLoader;
 import edu.rit.entityg.dataloaders.DataSourceType;
 import edu.rit.entityg.prefuse.view.CustomizedForceDirectedLayout;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
+import edu.rit.entityg.utils.ExceptionUtils;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ public abstract class AbstractEntityG extends Display {
      * The data loader for EntityG. This is an abstract class so we can later specify exactly what data source
      * we are loading data from.
      */
-    protected DataSourceLoader loader;
+    private DataSourceLoader loader;
     /**
      * Default flag to say whether tool tips should be displayed when hovering over {@link Node}s.
      */
@@ -75,6 +76,14 @@ public abstract class AbstractEntityG extends Display {
     public AbstractEntityG() {
         super( new Visualization() );
         displayNodeToDataNodeMap = new HashMap<Node, GenericTreeNode<String>>();
+    }
+
+    /**
+     * Registers a new instance of {@link DataSourceLoader} for this EntityG instance.
+     * @param loader The {@link DataSourceLoader} that should be registered for this EntityG instance.
+     */
+    public void registerLoader( DataSourceLoader loader ) {
+        this.loader = loader;
     }
 
     /**
@@ -94,6 +103,20 @@ public abstract class AbstractEntityG extends Display {
         frame.pack();
         frame.setVisible( true );
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+
+        /**
+         * Add a shutdown hook so we can manually close a connection to any data source.
+         */
+        Runtime.getRuntime().addShutdownHook( new Thread( new Runnable() {
+
+            public void run() {
+                try {
+                    loader.close();
+                } catch( Exception e ) {
+                    ExceptionUtils.handleException( e );
+                }
+            }
+        }));
     }
 
     /**

@@ -1,5 +1,6 @@
 package edu.rit.entityg;
 
+import edu.rit.entityg.dataloaders.XMLLoader;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
 import java.awt.event.MouseEvent;
 import prefuse.visual.VisualItem;
@@ -12,6 +13,10 @@ import prefuse.visual.VisualItem;
  * @author Eric Kisner
  */
 public class XMLEntityG extends AbstractEntityG {
+    /**
+     * The data loader for EntityG.
+     */
+    private XMLLoader loader;
 
     public GenericTreeNode<String> setupAbsoluteParent() {
         throw new UnsupportedOperationException( "Not supported yet." );
@@ -22,6 +27,7 @@ public class XMLEntityG extends AbstractEntityG {
     }
 
     public void connectToDataSource() {
-        throw new UnsupportedOperationException( "Not supported yet." );
+        loader = new XMLLoader();
+        super.registerLoader( loader );
     }
 }
