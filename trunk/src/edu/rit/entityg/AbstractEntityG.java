@@ -57,8 +57,8 @@ public abstract class AbstractEntityG extends Display {
      */
     protected HashMap<Node, GenericTreeNode<String>> displayNodeToDataNodeMap;
     /**
-     * The data loader for EntityG. This is an abstract class so we can later specify exactly what data source
-     * we are loading data from.
+     * The data loader for EntityG. This is only used to close the connection to the data source when our program
+     * terminates.
      */
     private DataSourceLoader loader;
     /**
