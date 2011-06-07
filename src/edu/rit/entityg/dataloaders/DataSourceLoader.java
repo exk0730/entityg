@@ -2,12 +2,18 @@ package edu.rit.entityg.dataloaders;
 
 import edu.rit.entityg.exceptions.BadSetupException;
 import edu.rit.entityg.treeimpl.GenericTreeNode;
+import java.util.HashMap;
 
 /**
  * This is the interface for all data source loaders to implement.
  * @author Eric Kisner
  */
 public interface DataSourceLoader {
+
+    /**
+     * Closes the connection to the data source.
+     */
+    public void close() throws Exception;
 
     /**
      * Sets up the base node (and its children) of EntityG. This should load all information from the data source into
@@ -54,33 +60,4 @@ public interface DataSourceLoader {
      */
     public GenericTreeNode<String> loadCenterNodes( GenericTreeNode<String> parent, int maxNodes,
                                                     Object... data ) throws BadSetupException;
-
-    /**
-     * Set the base query for loading data into prefuse nodes.
-     * <p/>
-     * The <code>baseQuery</code> for the database loader is the query which will provide all information needed
-     * to load data into the prefuse nodes. This query will usually look something like:
-     * <br/><code>SELECT * FROM <i>tableName</i> WHERE</code>
-     * <br/>with the ending to the where-clause being specified by what node is clicked on (or initial load
-     * specifications). It can be a complicated SQL query, or a simple one, but the query should contain the table
-     * name, and possibly the specific columns you want to be looking at (although, these columns can be specified
-     * through {@link DatabaseLoader#setInformationNodeColumNames(java.lang.String[])}). If the baseQuery is null at
-     * the time of this class performing any functions, the program will fail to execute and exit gracefully.
-     */
-    public void setBaseQuery( String baseQuery );
-
-    /**
-     * Set the column name of any center node's data.
-     * <p/>
-     * For example, if we want to display center nodes of type "First Name," the base column name would be "First Name."
-     */
-    public void setCenterNodeColumnName( String centerNodeColumnName );
-
-    /**
-     * Sets all information node column names.
-     * <p/>
-     * For example, if we want to display information nodes "City", "State", and "Zip", those would be our information
-     * node column names.
-     */
-    public void setInformationNodeColumNames( String[] columnNames );
 }

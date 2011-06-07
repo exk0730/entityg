@@ -52,9 +52,9 @@ public class DatabaseConnection {
      */
     private static DatabaseConnection instance = null;
     /**
-     * Default properties for connecting to the VAR App database.
+     * Default properties for connecting to a database.
      */
-    public final static Properties setup = new Properties();
+    private final static Properties setup = new Properties();
 
     static {
         setup.setProperty( "url", URL + HOST + ":" + PORT + "/" + DATABASE + "?zeroDateTimeBehavior=convertToNull" );
