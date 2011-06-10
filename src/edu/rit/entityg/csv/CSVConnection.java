@@ -15,6 +15,9 @@ import java.util.Properties;
  */
 public class CSVConnection {
 
+    /**
+     * A <code>comma</code> which is the delimiter for CSV files.
+     */
     public static final String DELIM = ",";
     private static CSVConnection instance;
     private static final Properties setup = new Properties();
@@ -74,6 +77,11 @@ public class CSVConnection {
     private boolean hasNext() throws IOException {
         line = reader.readLine();
         return !(line == null);
+    }
+
+    public void reset() throws IOException {
+        reader = new BufferedReader( new FileReader( file ) );
+        columnNames = Arrays.asList( reader.readLine().split( DELIM ) );
     }
 
     public void close() throws IOException {

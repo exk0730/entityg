@@ -82,7 +82,7 @@ public abstract class AbstractEntityG extends Display {
      * Registers a new instance of {@link DataSourceLoader} for this EntityG instance.
      * @param loader The {@link DataSourceLoader} that should be registered for this EntityG instance.
      */
-    public void registerLoader( DataSourceLoader loader ) {
+    protected void registerLoader( DataSourceLoader loader ) {
         this.loader = loader;
     }
 
