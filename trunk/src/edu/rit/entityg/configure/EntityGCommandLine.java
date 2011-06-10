@@ -18,7 +18,7 @@ import static edu.rit.entityg.configure.EntityGOptions.*;
  * options set with this class will override any options set in {@link EntityGIniFile}.
  * <br/>
  * <br/>
- * <b>Note:</b> See {@link EntityGIniFile} for a list of possible options that can be specified
+ * <b>Note:</b> See {@link EntityGConfiguration} for a list of possible options that can be specified
  * in the command line.
  * @date May 10, 2011
  * @author Eric Kisner
@@ -88,7 +88,7 @@ public class EntityGCommandLine {
     /**
      * Uses the Commons CLI {@link HelpFormatter} to print a usage statement.
      */
-    public static void usage() {
+    private static void usage() {
         HelpFormatter help = new HelpFormatter();
         help.printHelp( "EntityG.java", options );
         System.exit( 0 );

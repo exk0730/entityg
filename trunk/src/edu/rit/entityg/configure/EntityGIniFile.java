@@ -13,6 +13,9 @@ import java.util.HashMap;
  * {@link EntityGIniFile} is a class specifically used for parsing the <code>entityg.ini</code> file.
  * EntityG can be run as a standalone application, as well as using it within another Java application. This class
  * should be used in both instances when reading from the configuration file which can set up EntityG.
+ * <br/>
+ * <br/>
+ * <b>Note:</b> See {@link EntityGConfiguration} for a list of possible options that can be specified.
  * @date May 19, 2011
  * @author Eric Kisner
  */

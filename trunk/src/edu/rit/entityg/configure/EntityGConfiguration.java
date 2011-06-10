@@ -182,6 +182,9 @@ public class EntityGConfiguration {
      * Runs any setter methods based on the configuration objects. This method will first retrieve any options that can
      * be set based on <code>dst</code>, then run any setter methods based on the names of those options using
      * reflection.
+     * <p/><b>Note:</b> It is important that each value passed into a setter method is a String, otherwise this
+     * method will throw an {@link IllegalArgumentException} since we are only ever passing in strings to the setter
+     * methods. The setter methods are required to parse this string into the needed data type.
      * @param dst The {@link DataSourceType} that we are setting fields for.
      * @param obj The {@link AbstractEntityG} instance we are using based on <code>dst</code>.
      */
@@ -210,8 +213,8 @@ public class EntityGConfiguration {
         }
 
         /**
-         * We need to determine USE_TOOL_TIP's option because the command line only requires that the flag is set, while
-         * the .ini file requires that the option is set to "true".
+         * We need to determine USE_TOOL_TIP's option separately because the command line only requires that the flag
+         * is set, while the .ini file only requires that the option is set to "true".
          */
         if( !emptyArgs ) {
             if( entitygCL.optionExists( USE_TOOL_TIP ) ) {
