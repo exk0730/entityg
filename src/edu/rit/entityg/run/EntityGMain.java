@@ -9,8 +9,6 @@ import edu.rit.entityg.configure.EntityGConfiguration;
  * @date May 24, 2011
  * @author Eric Kisner
  *
- * Presidency 	President 	Took office 	Left office 	Party 	Home State
-
  */
 public class EntityGMain {
 
