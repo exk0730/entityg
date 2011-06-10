@@ -117,6 +117,11 @@ public class EntityGCommandLine {
                 withDescription( "Type of data source to load from. Choose one: [database | xml | csv]" ).
                 create( DATASOURCE_TYPE );
 
+        /**
+         * ----------------------------------------------------------------------------------------------------------
+         * Database options.
+         * ----------------------------------------------------------------------------------------------------------
+         */
         Option hostOption = OptionBuilder.withArgName( HOST ).
                 hasArg().
                 withDescription( "Host URL for database if <type> = database." ).
@@ -163,6 +168,38 @@ public class EntityGCommandLine {
                                  + " of EntityG. Column names should be separated by commas." ).
                 create( CHILDREN_COLUMNS );
 
+        /**
+         * ----------------------------------------------------------------------------------------------------------
+         * CSV options.
+         * ----------------------------------------------------------------------------------------------------------
+         */
+        Option fileNameOption = OptionBuilder.withArgName( "filepath" ).
+                hasArg().
+                withDescription( "The file path to the CSV file if <type> = csv." ).
+                create( FILE_NAME );
+
+        Option centerNodeColumnNumberOption = OptionBuilder.withArgName( "column number" ).
+                hasArg().
+                withDescription( "The column number for center nodes if <type> = csv." ).
+                create( CENTER_NODE_COLUMN_NUMBER );
+
+        Option centerNodeColumnNameOption = OptionBuilder.withArgName( "column name" ).
+                hasArg().
+                withDescription( "The column name for center nodes if <type> = csv. This must match with ["
+                                 + CENTER_NODE_COLUMN_NUMBER + "]" ).
+                create( CENTER_NODE_COLUMN_NAME );
+
+        Option columnToNameMappingOption = OptionBuilder.withArgName( "column name mapping" ).
+                hasArg().
+                withDescription( "The names of each column, delimited by a comma (no spaces), if <type> = csv." ).
+                create( COLUMN_TO_NAME_MAPPING );
+
+        Option informationNodeColumnNumbersOption = OptionBuilder.withArgName( "column numbers" ).
+                hasArg().
+                withDescription( "The column numbers for information nodes, delimited by a comma (no spaces), if "
+                                 + "<type> = csv." ).
+                create( INFORMATION_NODE_COLUMN_NUMBERS );
+
         options.addOption( useConfigFileOption );
         options.addOption( maxNodesOption );
         options.addOption( useToolTipOption );
@@ -176,5 +213,10 @@ public class EntityGCommandLine {
         options.addOption( baseColumnOption );
         options.addOption( firstNodeDataOption );
         options.addOption( childrenOption );
+        options.addOption( fileNameOption );
+        options.addOption( centerNodeColumnNumberOption );
+        options.addOption( centerNodeColumnNameOption );
+        options.addOption( columnToNameMappingOption );
+        options.addOption( informationNodeColumnNumbersOption );
     }
 }

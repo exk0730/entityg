@@ -1,5 +1,6 @@
 package edu.rit.entityg.configure;
 
+import edu.rit.entityg.CSVEntityG;
 import edu.rit.entityg.DatabaseEntityG;
 import edu.rit.entityg.dataloaders.DataSourceType;
 
@@ -26,6 +27,16 @@ public class EntityGOptions {
     public static final String CHILDREN_COLUMNS = "children_columns";
     /**
      * ----------------------------------------------------------------------------------------------------------
+     * CSV configuration static labels.
+     * ----------------------------------------------------------------------------------------------------------
+     */
+    public static final String FILE_NAME = "file_name";
+    public static final String CENTER_NODE_COLUMN_NAME = "center_node_column_name";
+    public static final String CENTER_NODE_COLUMN_NUMBER = "center_node_column_number";
+    public static final String COLUMN_TO_NAME_MAPPING = "column_to_name_mapping";
+    public static final String INFORMATION_NODE_COLUMN_NUMBERS = "information_node_column_numbers";
+    /**
+     * ----------------------------------------------------------------------------------------------------------
      * EntityG general configuration labels.
      * ----------------------------------------------------------------------------------------------------------
      */
@@ -50,8 +61,7 @@ public class EntityGOptions {
                 throw new UnsupportedOperationException( DataSourceType.XML.name() + " is not a supported data source "
                                                          + "type currently." );
             case CSV:
-                throw new UnsupportedOperationException( DataSourceType.CSV.name() + " is not a supported data source "
-                                                         + "type currently." );
+                return getCSVOptions();
             default:
                 throw new IllegalArgumentException( dst.name() + " is not a valid data source type." );
         }
@@ -62,15 +72,30 @@ public class EntityGOptions {
      * @return Array of options that can be set for a database.
      */
     private static String[] getDatabaseOptions() {
-        return new String[]{ HOST,
-                             PORT,
-                             USER,
-                             PASSWORD,
-                             DATABASE_NAME,
-                             BASE_QUERY,
-                             BASE_COLUMN_NAME,
-                             FIRST_NODE_ENTRY,
-                             CHILDREN_COLUMNS
+        return new String[]{
+                    HOST,
+                    PORT,
+                    USER,
+                    PASSWORD,
+                    DATABASE_NAME,
+                    BASE_QUERY,
+                    BASE_COLUMN_NAME,
+                    FIRST_NODE_ENTRY,
+                    CHILDREN_COLUMNS
+                };
+    }
+
+    /**
+     * Returns an array of options that can be used in {@link CSVEntityG}.
+     * @return Array of options that can be set for a CSV file.
+     */
+    private static String[] getCSVOptions() {
+        return new String[]{
+                    FILE_NAME,
+                    CENTER_NODE_COLUMN_NUMBER,
+                    CENTER_NODE_COLUMN_NAME,
+                    COLUMN_TO_NAME_MAPPING,
+                    INFORMATION_NODE_COLUMN_NUMBERS
                 };
     }
 }

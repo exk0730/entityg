@@ -37,6 +37,14 @@ public class CSVEntityG extends AbstractEntityG {
     }
 
     /**
+     * Set the path to the CSV file.
+     * @param fileName The CSV file's path.
+     */
+    public void set_file_name( String fileName ) {
+        this.fileName = fileName;
+    }
+    
+    /**
      * Sets the center node column name.
      * @param columnName The name of the column in the CSV file that contains center node data.
      */
@@ -44,13 +52,6 @@ public class CSVEntityG extends AbstractEntityG {
         this.centerColumnName = columnName;
     }
 
-    /**
-     * Set the path to the CSV file.
-     * @param fileName The CSV file's path.
-     */
-    public void set_file_name( String fileName ) {
-        this.fileName = fileName;
-    }
 
     /**
      * Set the column number that contains center node data.
@@ -58,29 +59,10 @@ public class CSVEntityG extends AbstractEntityG {
      */
     public void set_center_node_column_number( String columnNumber ) {
         try {
-            this.centerColumnNumber = Integer.parseInt( columnNumber );
+            this.centerColumnNumber = Integer.parseInt( columnNumber ) - 1;
         } catch( NumberFormatException nfe ) {
             ExceptionUtils.handleMessage( columnNumber + " is not a number." );
             this.centerColumnNumber = -1;
-        }
-    }
-
-    /**
-     * Sets the list of column numbers which contain all information node data.
-     * @param columnNumbers A list of integers, represented as a String with {@link CSVConnection#DELIM} separating
-     *                      each number.
-     */
-    public void set_information_node_column_numbers( String columnNumbers ) {
-        String[] temp = columnNumbers.split( DELIM );
-        this.infoColumnNumbers = new int[temp.length];
-        for( int i = 0; i < temp.length; i++ ) {
-            try {
-                infoColumnNumbers[i] = Integer.parseInt( temp[i] );
-            } catch( NumberFormatException nfe ) {
-                ExceptionUtils.handleMessage( temp[i] + " is not a number." );
-                this.infoColumnNumbers = new int[0];
-                break;
-            }
         }
     }
 
@@ -95,6 +77,25 @@ public class CSVEntityG extends AbstractEntityG {
         String[] temp = columnNames.split( DELIM );
         for( int i = 0; i < temp.length; i++ ) {
             columnToNameMapping.put( i, temp[i] );
+        }
+    }
+
+    /**
+     * Sets the list of column numbers which contain all information node data.
+     * @param columnNumbers A list of integers, represented as a String with {@link CSVConnection#DELIM} separating
+     *                      each number.
+     */
+    public void set_information_node_column_numbers( String columnNumbers ) {
+        String[] temp = columnNumbers.split( DELIM );
+        this.infoColumnNumbers = new int[temp.length];
+        for( int i = 0; i < temp.length; i++ ) {
+            try {
+                infoColumnNumbers[i] = Integer.parseInt( temp[i] ) - 1;
+            } catch( NumberFormatException nfe ) {
+                ExceptionUtils.handleMessage( temp[i] + " is not a number." );
+                this.infoColumnNumbers = new int[0];
+                break;
+            }
         }
     }
 
