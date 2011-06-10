@@ -1,7 +1,9 @@
 package edu.rit.entityg.configure;
 
 import edu.rit.entityg.AbstractEntityG;
+import edu.rit.entityg.CSVEntityG;
 import edu.rit.entityg.DatabaseEntityG;
+import edu.rit.entityg.csv.CSVConnection;
 import edu.rit.entityg.dataloaders.DataSourceType;
 import edu.rit.entityg.exceptions.InvalidIniException;
 import edu.rit.entityg.utils.ExceptionUtils;
@@ -59,7 +61,18 @@ import static edu.rit.entityg.configure.EntityGOptions.*;
  * <h4>CSV source</h4>
  * <table border="1"> <tr><th>name</th><th>value type</th><th>required</th><th>default</th><th>description</th></tr>
  * <p/>
- * <tr><td>file</td><td>String</td><td>yes</td><td><code>none</code></td><td>Path to the CSV file.</td></tr>
+ * <tr><td>file_name</td><td>String</td><td>yes</td><td><code>none</code></td><td>Path to the CSV file.</td></tr>
+ * <tr><td>center_node_column_name</td><td>String</td><td>yes</td><td><code>none</code></td>
+ * <td>The name of the column that contains all of the data for center nodes.</td></tr>
+ * <tr><td>center_node_column_number</td><td>int</td><td>yes</td><td><code>none</code></td>
+ * <td>The column number of the data for center nodes. This must match with the <code>center_node_column_name</code>.
+ * Also note that column numbers start at one, meaning, the leftmost column number is <code>1</code>.</td></tr>
+ * <tr><td>column_to_name_mapping</td><td>list of Strings</td><td>yes</td><td><code>none</code></td>
+ * <td>A list of Strings delimited by {@link CSVConnection#DELIM} which represents the names of each column.
+ * These names must exactly correspond to the column numbers.</td></tr>
+ * <tr><td>information_node_column_numbers</td><td>list of ints</td><td>yes</td><td><code>none</code></td>
+ * <td>A list of integers delimited by {@link CSVConnection#DELIM} which represents the column numbers of each column
+ * that contains data for information nodes. Also note that column numbers start at one.</td></tr>
  * </table>
  * @see EntityGCommandLine
  * @see EntityGIniFile
@@ -170,7 +183,9 @@ public class EntityGConfiguration {
             runMethodsForDataSource( DataSourceType.DATABASE, entityG );
             entityG.connectToDataSource();
         } else if( dst.equalsIgnoreCase( "csv" ) ) {
-            throw new UnsupportedOperationException( "CSV is not implemented yet." );
+            entityG = new CSVEntityG();
+            runMethodsForDataSource( DataSourceType.CSV, entityG );
+            entityG.connectToDataSource();
         } else if( dst.equalsIgnoreCase( "xml" ) ) {
             throw new UnsupportedOperationException( "XML is not implemented yet." );
         } else {

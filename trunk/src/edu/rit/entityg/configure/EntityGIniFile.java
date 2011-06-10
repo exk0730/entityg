@@ -91,7 +91,7 @@ public class EntityGIniFile {
         try {
             File file = new File( filePath );
             if( !file.exists() ) {
-                throw new InvalidIniException( filePath + " is not a valid file." );
+                throw new InvalidIniException( filePath + " does not exist." );
             } else if( !file.getCanonicalPath().endsWith( ".ini" ) ) {
                 throw new InvalidIniException( filePath + " is not a valid .ini file." );
             }
