@@ -145,7 +145,8 @@ public class CSVConnection {
      */
     public TableRow getLine() throws IOException {
         if( hasNext() ) {
-            return new ATableRow( line.split( DELIM ), columnNames );
+            //Replace all quotes before using the line.
+            return new ATableRow( line.replaceAll( "\"", "" ).split( DELIM ), columnNames );
         }
         return null;
     }
